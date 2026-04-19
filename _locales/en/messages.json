@@ -1,0 +1,275 @@
+﻿{
+    "extName":  {
+                    "message":  "YouTube Video Filter (Enhanced)"
+                },
+    "extDesc":  {
+                    "message":  "High-precision content detox: Filter by channel, duration, and keywords with locale-aware matching."
+                },
+    "tabGeneral":  {
+                       "message":  "General"
+                   },
+    "tabSidepanel":  {
+                         "message":  "Sidepanel"
+                     },
+    "tabChannels":  {
+                        "message":  "Channels"
+                    },
+    "tabSettings":  {
+                        "message":  "Settings"
+                    },
+    "tabChangelog":  {
+                         "message":  "Changelog"
+                     },
+    "generalHeader":  {
+                          "message":  "General Settings"
+                      },
+    "generalSub":  {
+                       "message":  "Global detox and redirection controls."
+                   },
+    "redirectHome":  {
+                         "message":  "Redirect Home to Subs"
+                     },
+    "hideHomeFeed":  {
+                         "message":  "Hide Home Feed"
+                     },
+    "hideSidebar":  {
+                        "message":  "Hide Related Sidebar"
+                    },
+    "hideComments":  {
+                         "message":  "Hide Comments"
+                     },
+    "hideTrending":  {
+                         "message":  "Hide Trending/Explore"
+                     },
+    "hideShorts":  {
+                       "message":  "Hide Shorts (Global)"
+                   },
+    "hideEndscreen":  {
+                          "message":  "Hide Endscreen"
+                      },
+    "hideNotifications":  {
+                              "message":  "Hide Notifications"
+                          },
+    "languageLabel":  {
+                          "message":  "Language"
+                      },
+    "sidepanelHeader":  {
+                            "message":  "Sidepanel Customization"
+                        },
+    "sidepanelSub":  {
+                         "message":  "Hide specific sidebar sections."
+                     },
+    "sideHideHome":  {
+                         "message":  "Hide Home"
+                     },
+    "sideHideShorts":  {
+                           "message":  "Hide Shorts"
+                       },
+    "sideHideSubs":  {
+                         "message":  "Hide Subscriptions"
+                     },
+    "sideHideYou":  {
+                        "message":  "Hide You"
+                    },
+    "sideHideExplore":  {
+                            "message":  "Hide Explore"
+                        },
+    "sideHideMore":  {
+                         "message":  "Hide More from YT"
+                     },
+    "sideHideHistory":  {
+                            "message":  "Hide Report History"
+                        },
+    "sideHideLegal":  {
+                          "message":  "Hide Legal"
+                      },
+    "sideAutoExpand":  {
+                           "message":  "Auto-expand Subscriptions"
+                       },
+    "channelsHeader":  {
+                           "message":  "Channel Based Settings"
+                       },
+    "channelsSub":  {
+                        "message":  "Specific overrides for your channels."
+                    },
+    "addBtn":  {
+                   "message":  "Add"
+               },
+    "sortLabel":  {
+                      "message":  "Sort"
+                  },
+    "filterLabel":  {
+                        "message":  "Filter"
+                    },
+    "sortRecent":  {
+                       "message":  "Recent"
+                   },
+    "sortAlpha":  {
+                      "message":  "A-Z"
+                  },
+    "sortOldest":  {
+                       "message":  "Oldest First"
+                   },
+    "sortNewest":  {
+                       "message":  "Newest First"
+                   },
+    "filterAll":  {
+                      "message":  "All"
+                  },
+    "filterShorts":  {
+                         "message":  "Shorts Allowed"
+                     },
+    "filterComments":  {
+                           "message":  "Comments Allowed"
+                       },
+    "filterEndscreen":  {
+                            "message":  "Endscreen Allowed"
+                        },
+    "filterBell":  {
+                       "message":  "Bell Allowed"
+                   },
+    "filterDuration":  {
+                           "message":  "With Limits"
+                       },
+    "deleteAllRules":  {
+                           "message":  "Delete All Rules"
+                       },
+    "settingsHeader":  {
+                           "message":  "Appearance \u0026 Settings"
+                       },
+    "settingsSub":  {
+                        "message":  "Sync colors and choose your icons."
+                    },
+    "accentColor":  {
+                        "message":  "Accent Color (Hex)"
+                    },
+    "lightMode":  {
+                      "message":  "Light Mode"
+                  },
+    "emojiTheme":  {
+                       "message":  "Emoji Theme Selector"
+                   },
+    "emojiVis":  {
+                     "message":  "Vis"
+                 },
+    "emojiHid":  {
+                     "message":  "Hid"
+                 },
+    "emojiYes":  {
+                     "message":  "Yes"
+                 },
+    "emojiNo":  {
+                    "message":  "No"
+                },
+    "historyTitle":  {
+                         "message":  "Project History"
+                     },
+    "ruleKeywords":  {
+                         "message":  "Enter keywords (comma separated)..."
+                     },
+    "ruleModeHide":  {
+                         "message":  "Hide if match"
+                     },
+    "ruleModeShow":  {
+                         "message":  "Only show if match"
+                     },
+    "matchContains":  {
+                          "message":  "Contains"
+                      },
+    "matchStarts":  {
+                        "message":  "Starts With"
+                    },
+    "matchEnds":  {
+                      "message":  "Ends With"
+                  },
+    "matchExact":  {
+                       "message":  "Exactly"
+                   },
+    "labelMin":  {
+                     "message":  "Min"
+                 },
+    "labelMax":  {
+                     "message":  "Max"
+                 },
+    "labelMinutes":  {
+                         "message":  "Min."
+                     },
+    "labelShorts":  {
+                        "message":  "Shorts"
+                    },
+    "labelComments":  {
+                          "message":  "Comm."
+                      },
+    "labelEndscreen":  {
+                           "message":  "Endscr."
+                       },
+    "labelBell":  {
+                      "message":  "Bell"
+                  },
+    "btnDelete":  {
+                      "message":  "Delete"
+                  },
+    "placeholderChannel":  {
+                               "message":  "@ChannelHandle"
+                           },
+    "tabBlocked":  {
+                       "message":  "Blocked"
+                   },
+    "blockedHeader":  {
+                          "message":  "Blocked Channels"
+                      },
+    "blockedSub":  {
+                       "message":  "These channels are hidden everywhere on YouTube."
+                   },
+    "blockBtn":  {
+                     "message":  "ðŸš« Block"
+                 },
+    "unblockBtn":  {
+                       "message":  "Unblock"
+                   },
+    "unblockAllBtn":  {
+                          "message":  "Unblock All"
+                      },
+    "noBlocked":  {
+                      "message":  "No blocked channels yet. Block a channel to hide it everywhere."
+                  },
+    "tabFeedback":  {
+                        "message":  "Feedback"
+                    },
+    "feedbackHeader":  {
+                           "message":  "Your Feedback Matters"
+                       },
+    "feedbackSub":  {
+                        "message":  "Help us improve YT Filter with your ideas and reports."
+                    },
+    "feedbackText":  {
+                         "message":  "Found a bug? Have an idea for a new feature? We\u0027d love to hear from you! Your feedback helps us make YT Filter better for everyone."
+                     },
+    "feedbackBug":  {
+                        "message":  "Bug Reports"
+                    },
+    "feedbackIdea":  {
+                         "message":  "Feature Ideas"
+                     },
+    "feedbackGeneral":  {
+                            "message":  "General Feedback"
+                        },
+    "feedbackBtn":  {
+                        "message":  "ðŸ“ Send Feedback"
+                    },
+    "feedbackNote":  {
+                         "message":  "Opens a short Google Form in a new tab. No account required."
+                     },
+    "backupLabel":  {
+                        "message":  "Backup \u0026 Restore"
+                    },
+    "backupHint":  {
+                       "message":  "Export settings before uninstalling. Import to restore after reinstalling."
+                   },
+    "exportBtn":  {
+                      "message":  "⬇️ Export Settings"
+                  },
+    "importBtn":  {
+                      "message":  "⬆️ Import Settings"
+                  }
+}

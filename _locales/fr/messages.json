@@ -1,0 +1,269 @@
+﻿{
+    "extName":  {
+                    "message":  "YouTube Video Filter (AmÃ©liorÃ©)"
+                },
+    "extDesc":  {
+                    "message":  "DÃ©toxe de contenu haute prÃ©cision: Filtrer par canal, durÃ©e et mots-clÃ©s."
+                },
+    "tabGeneral":  {
+                       "message":  "GÃ©nÃ©ral"
+                   },
+    "tabSidepanel":  {
+                         "message":  "Panneau latÃ©ral"
+                     },
+    "tabChannels":  {
+                        "message":  "ChaÃ®nes"
+                    },
+    "tabSettings":  {
+                        "message":  "ParamÃ¨tres"
+                    },
+    "tabChangelog":  {
+                         "message":  "Versions"
+                     },
+    "generalHeader":  {
+                          "message":  "ParamÃ¨tres gÃ©nÃ©raux"
+                      },
+    "generalSub":  {
+                       "message":  "ContrÃ´les de dÃ©toxe globale et de redirection."
+                   },
+    "redirectHome":  {
+                         "message":  "Rediriger Accueil vers Subs"
+                     },
+    "hideHomeFeed":  {
+                         "message":  "Masquer le flux d\u0027accueil"
+                     },
+    "hideSidebar":  {
+                        "message":  "Masquer les vidÃ©os suggÃ©rÃ©es"
+                    },
+    "hideComments":  {
+                         "message":  "Masquer les commentaires"
+                     },
+    "hideTrending":  {
+                         "message":  "Masquer Tendances"
+                     },
+    "hideShorts":  {
+                       "message":  "Masquer Shorts (Global)"
+                   },
+    "hideEndscreen":  {
+                          "message":  "Masquer l\u0027Ã©cran final"
+                      },
+    "hideNotifications":  {
+                              "message":  "Masquer les notifications"
+                          },
+    "languageLabel":  {
+                          "message":  "Langue"
+                      },
+    "sidepanelHeader":  {
+                            "message":  "Panneau latÃ©ral"
+                        },
+    "sidepanelSub":  {
+                         "message":  "Masquer des sections spÃ©cifiques."
+                     },
+    "sideHideHome":  {
+                         "message":  "Masquer Accueil"
+                     },
+    "sideHideShorts":  {
+                           "message":  "Masquer Shorts"
+                       },
+    "sideHideSubs":  {
+                         "message":  "Masquer Abonnements"
+                     },
+    "sideHideYou":  {
+                        "message":  "Masquer Vous (You)"
+                    },
+    "sideHideExplore":  {
+                            "message":  "Masquer Explorer"
+                        },
+    "sideHideMore":  {
+                         "message":  "Masquer Plus de YT"
+                     },
+    "sideHideHistory":  {
+                            "message":  "Masquer Historique"
+                        },
+    "sideHideLegal":  {
+                          "message":  "Masquer LÃ©gal"
+                      },
+    "sideAutoExpand":  {
+                           "message":  "Auto-dÃ©velopper abonnements"
+                       },
+    "channelsHeader":  {
+                           "message":  "RÃ©glages par chaÃ®ne"
+                       },
+    "channelsSub":  {
+                        "message":  "Filtres spÃ©cifiques pour vos chaÃ®nes."
+                    },
+    "addBtn":  {
+                   "message":  "Ajouter"
+               },
+    "sortLabel":  {
+                      "message":  "Tri"
+                  },
+    "filterLabel":  {
+                        "message":  "Filtre"
+                    },
+    "sortRecent":  {
+                       "message":  "RÃ©cent"
+                   },
+    "sortAlpha":  {
+                      "message":  "A-Z"
+                  },
+    "filterAll":  {
+                      "message":  "Tous"
+                  },
+    "filterShorts":  {
+                         "message":  "Shorts autorisÃ©s"
+                     },
+    "filterComments":  {
+                           "message":  "Commentaires autorisÃ©s"
+                       },
+    "filterEndscreen":  {
+                            "message":  "Final autorisÃ©"
+                        },
+    "filterBell":  {
+                       "message":  "Cloche autorisÃ©e"
+                   },
+    "filterDuration":  {
+                           "message":  "Avec limites"
+                       },
+    "deleteAllRules":  {
+                           "message":  "Supprimer toutes les rÃ¨gles"
+                       },
+    "settingsHeader":  {
+                           "message":  "Apparence"
+                       },
+    "settingsSub":  {
+                        "message":  "Synchronisez les couleurs et les icÃ´nes."
+                    },
+    "accentColor":  {
+                        "message":  "Couleur d\u0027accentuation (Hex)"
+                    },
+    "lightMode":  {
+                      "message":  "Mode clair"
+                  },
+    "emojiTheme":  {
+                       "message":  "SÃ©lecteur d\u0027emojis"
+                   },
+    "emojiVis":  {
+                     "message":  "Vis"
+                 },
+    "emojiHid":  {
+                     "message":  "Masq"
+                 },
+    "emojiYes":  {
+                     "message":  "Oui"
+                 },
+    "emojiNo":  {
+                    "message":  "Non"
+                },
+    "historyTitle":  {
+                         "message":  "Historique du projet"
+                     },
+    "ruleKeywords":  {
+                         "message":  "Mots-clÃ©s (virgules)..."
+                     },
+    "ruleModeHide":  {
+                         "message":  "Masquer si match"
+                     },
+    "ruleModeShow":  {
+                         "message":  "Montrer que si match"
+                     },
+    "matchContains":  {
+                          "message":  "Contient"
+                      },
+    "matchStarts":  {
+                        "message":  "Commence par"
+                    },
+    "matchEnds":  {
+                      "message":  "Se termine par"
+                  },
+    "matchExact":  {
+                       "message":  "Exactement"
+                   },
+    "labelMin":  {
+                     "message":  "Min"
+                 },
+    "labelMax":  {
+                     "message":  "Max"
+                 },
+    "labelMinutes":  {
+                         "message":  "Mins."
+                     },
+    "labelShorts":  {
+                        "message":  "Shorts"
+                    },
+    "labelComments":  {
+                          "message":  "Comm."
+                      },
+    "labelEndscreen":  {
+                           "message":  "Final"
+                       },
+    "labelBell":  {
+                      "message":  "Notif."
+                  },
+    "btnDelete":  {
+                      "message":  "Suppr."
+                  },
+    "placeholderChannel":  {
+                               "message":  "@ChaÃ®ne"
+                           },
+    "tabBlocked":  {
+                       "message":  "BloquÃ©s"
+                   },
+    "blockedHeader":  {
+                          "message":  "ChaÃ®nes BloquÃ©es"
+                      },
+    "blockedSub":  {
+                       "message":  "Ces chaÃ®nes sont masquÃ©es partout sur YouTube."
+                   },
+    "blockBtn":  {
+                     "message":  "ðŸš« Bloquer"
+                 },
+    "unblockBtn":  {
+                       "message":  "DÃ©bloquer"
+                   },
+    "unblockAllBtn":  {
+                          "message":  "Tout dÃ©bloquer"
+                      },
+    "noBlocked":  {
+                      "message":  "Aucune chaÃ®ne bloquÃ©e pour l\u0027instant."
+                  },
+    "tabFeedback":  {
+                        "message":  "Avis"
+                    },
+    "feedbackHeader":  {
+                           "message":  "Votre Avis Compte"
+                       },
+    "feedbackSub":  {
+                        "message":  "Aidez-nous Ã  amÃ©liorer YT Filter avec vos idÃ©es et signalements."
+                    },
+    "feedbackText":  {
+                         "message":  "Vous avez trouvÃ© un bug ? Une idÃ©e de fonctionnalitÃ© ? Nous serions ravis de vous entendre ! Vos retours nous aident Ã  amÃ©liorer YT Filter pour tout le monde."
+                     },
+    "feedbackBug":  {
+                        "message":  "Signaler un bug"
+                    },
+    "feedbackIdea":  {
+                         "message":  "IdÃ©es de fonctionnalitÃ©s"
+                     },
+    "feedbackGeneral":  {
+                            "message":  "Avis gÃ©nÃ©ral"
+                        },
+    "feedbackBtn":  {
+                        "message":  "ðŸ“ Envoyer un avis"
+                    },
+    "feedbackNote":  {
+                         "message":  "Ouvre un court formulaire Google dans un nouvel onglet. Aucun compte requis."
+                     },
+    "backupLabel":  {
+                        "message":  "Sauvegarde \u0026 Restauration"
+                    },
+    "backupHint":  {
+                       "message":  "Exportez vos paramètres avant de désinstaller. Importez-les après réinstallation."
+                   },
+    "exportBtn":  {
+                      "message":  "⬇️ Exporter"
+                  },
+    "importBtn":  {
+                      "message":  "⬆️ Importer"
+                  }
+}

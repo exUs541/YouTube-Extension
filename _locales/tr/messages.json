@@ -1,0 +1,269 @@
+﻿{
+    "extName":  {
+                    "message":  "YouTube Video Filtresi (GeliÅŸmiÅŸ)"
+                },
+    "extDesc":  {
+                    "message":  "YÃ¼ksek hassasiyetli iÃ§erik detoksu: Kanal, sÃ¼re ve anahtar kelimelere gÃ¶re filtreleme."
+                },
+    "tabGeneral":  {
+                       "message":  "Genel"
+                   },
+    "tabSidepanel":  {
+                         "message":  "Yan Panel"
+                     },
+    "tabChannels":  {
+                        "message":  "Kanallar"
+                    },
+    "tabSettings":  {
+                        "message":  "Ayarlar"
+                    },
+    "tabChangelog":  {
+                         "message":  "SÃ¼rÃ¼m NotlarÄ±"
+                     },
+    "generalHeader":  {
+                          "message":  "Genel Ayarlar"
+                      },
+    "generalSub":  {
+                       "message":  "KÃ¼resel detoks ve yÃ¶nlendirme kontrolleri."
+                   },
+    "redirectHome":  {
+                         "message":  "Ana SayfayÄ± Aboneliklere YÃ¶nlendir"
+                     },
+    "hideHomeFeed":  {
+                         "message":  "Ana Sayfa AkÄ±ÅŸÄ±nÄ± Gizle"
+                     },
+    "hideSidebar":  {
+                        "message":  "Ä°lgili VideolarÄ± Gizle"
+                    },
+    "hideComments":  {
+                         "message":  "YorumlarÄ± Gizle"
+                     },
+    "hideTrending":  {
+                         "message":  "Trendler/KeÅŸfet\u0027i Gizle"
+                     },
+    "hideShorts":  {
+                       "message":  "Shorts\u0027larÄ± Gizle (Genel)"
+                   },
+    "hideEndscreen":  {
+                          "message":  "BitiÅŸ EkranÄ±nÄ± Gizle"
+                      },
+    "hideNotifications":  {
+                              "message":  "Bildirimleri Gizle"
+                          },
+    "languageLabel":  {
+                          "message":  "Dil"
+                      },
+    "sidepanelHeader":  {
+                            "message":  "Yan Panel Ã–zelleÅŸtirme"
+                        },
+    "sidepanelSub":  {
+                         "message":  "Belirli yan panel bÃ¶lÃ¼mlerini gizle."
+                     },
+    "sideHideHome":  {
+                         "message":  "Ana Sayfa\u0027yÄ± Gizle"
+                     },
+    "sideHideShorts":  {
+                           "message":  "Shorts\u0027u Gizle"
+                       },
+    "sideHideSubs":  {
+                         "message":  "Abonelikleri Gizle"
+                     },
+    "sideHideYou":  {
+                        "message":  "KitaplÄ±k\u0027Ä± (You) Gizle"
+                    },
+    "sideHideExplore":  {
+                            "message":  "KeÅŸfet\u0027i Gizle"
+                        },
+    "sideHideMore":  {
+                         "message":  "YouTube\u0027dan DiÄŸerleri\u0027ni Gizle"
+                     },
+    "sideHideHistory":  {
+                            "message":  "Rapor GeÃ§miÅŸi\u0027ni Gizle"
+                        },
+    "sideHideLegal":  {
+                          "message":  "Yasal ve Politikalar\u0027Ä± Gizle"
+                      },
+    "sideAutoExpand":  {
+                           "message":  "Abonelikleri Otomatik GeniÅŸlet"
+                       },
+    "channelsHeader":  {
+                           "message":  "Kanal BazlÄ± Ayarlar"
+                       },
+    "channelsSub":  {
+                        "message":  "KanallarÄ±nÄ±z iÃ§in Ã¶zel filtreler."
+                    },
+    "addBtn":  {
+                   "message":  "Ekle"
+               },
+    "sortLabel":  {
+                      "message":  "SÄ±rala"
+                  },
+    "filterLabel":  {
+                        "message":  "Filtrele"
+                    },
+    "sortRecent":  {
+                       "message":  "Yeni"
+                   },
+    "sortAlpha":  {
+                      "message":  "A-Z"
+                  },
+    "filterAll":  {
+                      "message":  "Hepsi"
+                  },
+    "filterShorts":  {
+                         "message":  "Shorts Ä°zin Ver"
+                     },
+    "filterComments":  {
+                           "message":  "Yorumlara Ä°zin Ver"
+                       },
+    "filterEndscreen":  {
+                            "message":  "BitiÅŸ EkranÄ± Ä°zin Ver"
+                        },
+    "filterBell":  {
+                       "message":  "Bildirimlere Ä°zin Ver"
+                   },
+    "filterDuration":  {
+                           "message":  "SÄ±nÄ±rÄ± Olanlar"
+                       },
+    "deleteAllRules":  {
+                           "message":  "TÃ¼m KurallarÄ± Sil"
+                       },
+    "settingsHeader":  {
+                           "message":  "GÃ¶rÃ¼nÃ¼m ve Ayarlar"
+                       },
+    "settingsSub":  {
+                        "message":  "Renkleri ve simgeleri eÅŸitleyin."
+                    },
+    "accentColor":  {
+                        "message":  "Vurgu Rengi (Hex)"
+                    },
+    "lightMode":  {
+                      "message":  "AÃ§Ä±k Tema"
+                  },
+    "emojiTheme":  {
+                       "message":  "Emoji Tema SeÃ§ici"
+                   },
+    "emojiVis":  {
+                     "message":  "AÃ§"
+                 },
+    "emojiHid":  {
+                     "message":  "Kapt"
+                 },
+    "emojiYes":  {
+                     "message":  "Evet"
+                 },
+    "emojiNo":  {
+                    "message":  "HayÄ±r"
+                },
+    "historyTitle":  {
+                         "message":  "Proje GeÃ§miÅŸi"
+                     },
+    "ruleKeywords":  {
+                         "message":  "Anahtar kelimeler (virgÃ¼lle ayÄ±rÄ±n)..."
+                     },
+    "ruleModeHide":  {
+                         "message":  "EÅŸleÅŸirse Gizle"
+                     },
+    "ruleModeShow":  {
+                         "message":  "Sadece EÅŸleÅŸirse GÃ¶ster"
+                     },
+    "matchContains":  {
+                          "message":  "Ä°Ã§eriyorsa"
+                      },
+    "matchStarts":  {
+                        "message":  "Bununla BaÅŸlÄ±yorsa"
+                    },
+    "matchEnds":  {
+                      "message":  "Bununla Bitiyorsa"
+                  },
+    "matchExact":  {
+                       "message":  "Tam EÅŸleÅŸme"
+                   },
+    "labelMin":  {
+                     "message":  "Min"
+                 },
+    "labelMax":  {
+                     "message":  "Maks"
+                 },
+    "labelMinutes":  {
+                         "message":  "Dak."
+                     },
+    "labelShorts":  {
+                        "message":  "Shorts"
+                    },
+    "labelComments":  {
+                          "message":  "Yorum"
+                      },
+    "labelEndscreen":  {
+                           "message":  "BitiÅŸ"
+                       },
+    "labelBell":  {
+                      "message":  "Zil"
+                  },
+    "btnDelete":  {
+                      "message":  "Sil"
+                  },
+    "placeholderChannel":  {
+                               "message":  "@KanalAdi"
+                           },
+    "tabBlocked":  {
+                       "message":  "Engellendi"
+                   },
+    "blockedHeader":  {
+                          "message":  "Engellenen Kanallar"
+                      },
+    "blockedSub":  {
+                       "message":  "Bu kanallar YouTube\u0027da her yerde gizlenir."
+                   },
+    "blockBtn":  {
+                     "message":  "ðŸš« Engelle"
+                 },
+    "unblockBtn":  {
+                       "message":  "Engeli KaldÄ±r"
+                   },
+    "unblockAllBtn":  {
+                          "message":  "TÃ¼mÃ¼nÃ¼ KaldÄ±r"
+                      },
+    "noBlocked":  {
+                      "message":  "HenÃ¼z engellenen kanal yok. Her yerde gizlemek iÃ§in bir kanal engelleyin."
+                  },
+    "tabFeedback":  {
+                        "message":  "Geri Bildirim"
+                    },
+    "feedbackHeader":  {
+                           "message":  "Geri Bildiriminiz Ã–nemli"
+                       },
+    "feedbackSub":  {
+                        "message":  "Fikirleriniz ve raporlarÄ±nÄ±zla YT Filter\u0027Ä± geliÅŸtirmemize yardÄ±mcÄ± olun."
+                    },
+    "feedbackText":  {
+                         "message":  "Bir hata mÄ± buldunuz? Yeni bir Ã¶zellik fikriniz mi var? Sizden duymak isteriz! Geri bildiriminiz YT Filter\u0027Ä± herkes iÃ§in daha iyi yapmamÄ±za yardÄ±mcÄ± olur."
+                     },
+    "feedbackBug":  {
+                        "message":  "Hata Bildirimi"
+                    },
+    "feedbackIdea":  {
+                         "message":  "Ã–zellik Fikirleri"
+                     },
+    "feedbackGeneral":  {
+                            "message":  "Genel Geri Bildirim"
+                        },
+    "feedbackBtn":  {
+                        "message":  "ðŸ“ Geri Bildirim GÃ¶nder"
+                    },
+    "feedbackNote":  {
+                         "message":  "Yeni bir sekmede kÄ±sa bir Google Formu aÃ§ar. Hesap gerekmez."
+                     },
+    "backupLabel":  {
+                        "message":  "Yedekle \u0026 Geri Yükle"
+                    },
+    "backupHint":  {
+                       "message":  "Kaldırmadan önce ayarları dışa aktarın. Yeniden yükledikten sonra içe aktarın."
+                   },
+    "exportBtn":  {
+                      "message":  "⬇️ Dışa Aktar"
+                  },
+    "importBtn":  {
+                      "message":  "⬆️ İçe Aktar"
+                  }
+}

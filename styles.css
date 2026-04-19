@@ -1,0 +1,49 @@
+/* YouTube Filter Native UI Styles */
+
+/* Channel Block Link (subtle next to channel name) */
+.yt-filter-channel-block {
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--yt-spec-text-secondary, #aaaaaa);
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: color 0.15s ease;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 6px;
+    border-radius: 4px;
+    vertical-align: middle;
+}
+
+.yt-filter-channel-block:hover {
+    color: #ff0000;
+    background: rgba(255, 0, 0, 0.1);
+}
+
+/* Injected Menu Item Style */
+.yt-filter-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--yt-spec-text-primary, #ffffff);
+    transition: background 0.1s ease;
+}
+
+.yt-filter-menu-item:hover {
+    background: var(--yt-spec-badge-chip-background, rgba(255, 255, 255, 0.1));
+}
+
+.yt-filter-menu-item svg {
+    margin-right: 16px;
+    width: 24px;
+    height: 24px;
+    color: var(--yt-spec-icon-inactive, #ffffff);
+}
+
+/* Cleanup: remove old floating overlay button styles */
+.yt-filter-block-container, .yt-filter-btn {
+    display: none !important;
+}
