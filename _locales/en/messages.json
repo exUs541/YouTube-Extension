@@ -1,9 +1,9 @@
 ﻿{
     "extName":  {
-                    "message":  "YouTube Video Filter (Enhanced)"
+                    "message":  "YouTube Channel Blocker \u0026 Video Filter"
                 },
     "extDesc":  {
-                    "message":  "High-precision content detox: Filter by channel, duration, and keywords with locale-aware matching."
+                    "message":  "Block channels, hide shorts, and filter YouTube videos by keywords or duration. Stay focused and clean your feed."
                 },
     "tabGeneral":  {
                        "message":  "General"

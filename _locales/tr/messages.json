@@ -1,9 +1,9 @@
 ﻿{
     "extName":  {
-                    "message":  "YouTube Video Filtresi (GeliÅŸmiÅŸ)"
+                    "message":  "YouTube Kanal Engelleyici ve Video Filtresi"
                 },
     "extDesc":  {
-                    "message":  "YÃ¼ksek hassasiyetli iÃ§erik detoksu: Kanal, sÃ¼re ve anahtar kelimelere gÃ¶re filtreleme."
+                    "message":  "YouTube kanallarını engelleyin, shorts videolarını gizleyin ve videoları filtreleyin. Akışınızı temiz ve odaklanmış tutun."
                 },
     "tabGeneral":  {
                        "message":  "Genel"

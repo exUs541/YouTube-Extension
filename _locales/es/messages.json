@@ -1,9 +1,9 @@
 ﻿{
     "extName":  {
-                    "message":  "YouTube Video Filter (Mejorado)"
+                    "message":  "Bloqueador de Canales de YouTube y Filtro"
                 },
     "extDesc":  {
-                    "message":  "DesintoxicaciÃ³n de contenido de alta precisiÃ³n: filtrar por canal, duraciÃ³n y palabras clave."
+                    "message":  "Bloquea canales de YouTube, oculta shorts y filtra videos por duración o palabras clave. Mantén el foco en lo importante."
                 },
     "tabGeneral":  {
                        "message":  "General"
