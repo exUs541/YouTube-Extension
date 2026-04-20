@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+    <div class="layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <header>
+                <div class="logo-area">
+                    <h1>YT Filter</h1><span class="version" id="app-current-version">v4.3.0</span>
+                </div>
+            </header>
+            <nav class="tabs">
+                <button class="tab-btn active" data-tab="general"><span class="icon">⚙️</span> <span
+                        data-i18n="tabGeneral">General</span></button>
+                <button class="tab-btn" data-tab="sidepanel"><span class="icon">📁</span> <span
+                        data-i18n="tabSidepanel">Sidepanel</span></button>
+                <button class="tab-btn" data-tab="individual"><span class="icon">📺</span> <span
+                        data-i18n="tabChannels">Channels</span></button>
+                <button class="tab-btn" data-tab="blocked"><span class="icon">🚫</span> <span
+                        data-i18n="tabBlocked">Blocked</span></button>
+                <button class="tab-btn" data-tab="customization"><span class="icon">🎨</span> <span
+                        data-i18n="tabSettings">Settings</span></button>
+                <button class="tab-btn" data-tab="changelog"><span class="icon">📜</span> <span
+                        data-i18n="tabChangelog">Changelog</span></button>
+                <button class="tab-btn" data-tab="feedback"><span class="icon">💬</span> <span
+                        data-i18n="tabFeedback">Feedback</span></button>
+            </nav>
+            <div class="sidebar-footer">
+                <div id="extension-toggle" class="power-toggle" title="Toggle Extension"><span
+                        class="power-symbol">OFF</span></div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <!-- General -->
+            <div id="general" class="tab-content active">
+                <div class="section-header">
+                    <h2 data-i18n="generalHeader">General Settings</h2>
+                    <p data-i18n="generalSub">Global detox and redirection controls.</p>
+                </div>
+                <div class="section no-scroll">
+                    <div class="detox-row"><label data-i18n="redirectHome">Redirect Home to Subs</label>
+                        <div class="eye-toggle" data-id="detox-redirect-subs">❌</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="hideHomeFeed">Hide Home Feed</label>
+                        <div class="eye-toggle" data-id="detox-home-feed">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="hideSidebar">Hide Related Sidebar</label>
+                        <div class="eye-toggle" data-id="detox-sidebar">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="hideComments">Hide Comments</label>
+                        <div class="eye-toggle" data-id="detox-comments">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="hideShorts">Hide Shorts (Global)</label>
+                        <div class="eye-toggle" data-id="detox-shorts">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="hideEndscreen">Hide Endscreens</label>
+                        <div class="eye-toggle" data-id="detox-endscreen">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="hideNotifications">Hide Notifications</label>
+                        <div class="eye-toggle" data-id="detox-notifications">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="hideTrending">Hide Trending</label>
+                        <div class="eye-toggle" data-id="detox-trending">👁️</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidepanel -->
+            <div id="sidepanel" class="tab-content">
+                <div class="section-header">
+                    <h2 data-i18n="sidepanelHeader">Sidepanel Customization</h2>
+                    <p data-i18n="sidepanelSub">Hide sections from the navigation guide.</p>
+                </div>
+                <div class="section no-scroll">
+                    <div class="detox-row"><label data-i18n="sideHideHome">Hide Home</label>
+                        <div class="eye-toggle" data-id="side-hide-home">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="sideHideShorts">Hide Shorts</label>
+                        <div class="eye-toggle" data-id="side-hide-shorts">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="sideHideSubs">Hide Subscriptions</label>
+                        <div class="eye-toggle" data-id="side-hide-subs">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="sideHideYou">Hide My YouTube</label>
+                        <div class="eye-toggle" data-id="side-hide-you">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="sideHideExplore">Hide Explore</label>
+                        <div class="eye-toggle" data-id="side-hide-explore">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="sideHideMore">Hide More from YouTube</label>
+                        <div class="eye-toggle" data-id="side-hide-more">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="sideHideHistory">Hide Reporthistory</label>
+                        <div class="eye-toggle" data-id="side-hide-report">👁️</div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="sideHideLegal">Hide Legal Notice</label>
+                        <div class="eye-toggle" data-id="side-hide-legal">👁️</div>
+                    </div>
+                    <hr class="divider">
+                    <div class="detox-row"><label data-i18n="sideAutoExpand">Auto-expand Subscriptions</label>
+                        <div class="eye-toggle" data-id="side-auto-expand-subs">❌</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Channels -->
+            <div id="individual" class="tab-content">
+                <div class="section-header">
+                    <h2 data-i18n="channelsHeader">Channel Based Settings</h2>
+                    <p data-i18n="channelsSub">Specific overrides for your channels.</p>
+                </div>
+                <div class="add-channel-rule"><input type="text" id="new-channel-handle"
+                        placeholder="@ChannelHandle"><button id="add-channel-rule-btn" class="secondary-btn"
+                        data-i18n="addBtn">Add</button></div>
+                <div class="toolbar">
+                    <div class="toolbar-item"><label data-i18n="sortLabel">Sort</label><select id="sort-by">
+                            <option value="recent" data-i18n="sortRecent">Recent</option>
+                            <option value="alpha" data-i18n="sortAlpha">A-Z</option>
+                        </select></div>
+                    <div class="toolbar-item"><label data-i18n="filterLabel">Filter</label><select id="filter-by">
+                            <option value="all" data-i18n="filterAll">All</option>
+                            <option value="shorts" data-i18n="filterShorts">Shorts Allowed</option>
+                            <option value="comments" data-i18n="filterComments">Comments Allowed</option>
+                            <option value="endscreen" data-i18n="filterEndscreen">Endscreens Allowed</option>
+                            <option value="bell" data-i18n="filterBell">Bell Allowed</option>
+                            <option value="duration" data-i18n="filterDuration">With Limits</option>
+                        </select></div>
+                </div>
+                <div id="channel-rules-list" class="scroll-list"></div>
+                <footer class="content-footer"><button id="delete-all-rules" class="secondary-btn danger"
+                        data-i18n="deleteAllRules">Delete All Rules</button></footer>
+            </div>
+
+            <!-- Blocked Channels -->
+            <div id="blocked" class="tab-content">
+                <div class="section-header">
+                    <h2 data-i18n="blockedHeader">Blocked Channels</h2>
+                    <p data-i18n="blockedSub">Manage completely hidden channels.</p>
+                </div>
+                <div class="add-channel-rule">
+                    <input type="text" id="new-blocked-handle" placeholder="@ChannelHandle">
+                    <button id="add-blocked-btn" class="secondary-btn" data-i18n="addBtn">Add</button>
+                </div>
+                <div class="toolbar">
+                    <div class="toolbar-item"><label data-i18n="sortLabel">Sort</label><select id="sort-blocked-by">
+                            <option value="alpha" data-i18n="sortAlpha">A-Z</option>
+                            <option value="chrono" data-i18n="sortOldest" selected>Oldest First</option>
+                            <option value="reverse-chrono" data-i18n="sortNewest">Newest First</option>
+                        </select></div>
+                </div>
+                <div id="blocked-channels-list" class="scroll-list"></div>
+                <footer class="content-footer">
+                    <button id="delete-all-blocked" class="secondary-btn danger" data-i18n="unblockAllBtn">Unblock
+                        All</button>
+                </footer>
+            </div>
+
+            <!-- Customization (Settings) -->
+            <div id="customization" class="tab-content">
+                <div class="section-header">
+                    <h2 data-i18n="settingsHeader">Appearance & Settings</h2>
+                    <p data-i18n="settingsSub">Sync colors and choose your icons.</p>
+                </div>
+                <div class="section no-scroll">
+                    <div class="color-section">
+                        <label class="setting-label" data-i18n="accentColor">Accent Color (Hex)</label>
+                        <div class="color-row">
+                            <input type="color" id="primary-color" value="#ff0000">
+                            <input type="text" id="hex-color" placeholder="#ff0000" maxlength="7">
+                        </div>
+                    </div>
+                    <div class="detox-row"><label data-i18n="lightMode">Light Mode</label>
+                        <div class="eye-toggle" id="theme-toggle" data-id="app-light-mode">❌</div>
+                    </div>
+                    <div class="detox-row">
+                        <label data-i18n="languageLabel">Language</label>
+                        <select id="language-selector">
+                            <option value="auto">Auto</option>
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="tr">Türkçe</option>
+                            <option value="es">Español</option>
+                            <option value="fr">Français</option>
+                        </select>
+                    </div>
+                    <hr class="divider">
+                    <div class="emoji-editor">
+                        <label class="setting-label" data-i18n="emojiTheme">Emoji Theme Selector</label>
+                        <select id="emoji-theme-preset">
+                            <option value="classic">Classic (👁️ 🙈 ✅ ❌)</option>
+                            <option value="privacy">Privacy (🛡️ 🚫 🟢 🔴)</option>
+                            <option value="check">Check (✔️ ✖️ 🔘 ⚪)</option>
+                            <option value="pulse">Pulse (🔴 ⚪ 🔴 🔘)</option>
+                            <option value="custom">Custom Emojis</option>
+                        </select>
+                        <div class="emoji-grid-compact">
+                            <div class="emoji-mini-group"><label data-i18n="emojiVis">Vis</label><input type="text"
+                                    id="emoji-visible" maxlength="2"></div>
+                            <div class="emoji-mini-group"><label data-i18n="emojiHid">Hid</label><input type="text"
+                                    id="emoji-hidden" maxlength="2"></div>
+                            <div class="emoji-mini-group"><label data-i18n="emojiYes">Yes</label><input type="text"
+                                    id="emoji-active" maxlength="2"></div>
+                            <div class="emoji-mini-group"><label data-i18n="emojiNo">No</label><input type="text"
+                                    id="emoji-inactive" maxlength="2"></div>
+                        </div>
+                    <hr class="divider">
+                    <div class="backup-section">
+                        <label class="setting-label" data-i18n="backupLabel">Backup &amp; Restore</label>
+                        <p class="backup-hint" data-i18n="backupHint">Export settings as JSON. Import after reinstalling.</p>
+                        <div class="backup-row">
+                            <button id="export-settings-btn" class="backup-btn export-btn" data-i18n="exportBtn">?? Export</button>
+                            <button id="import-settings-btn" class="backup-btn import-btn" data-i18n="importBtn">?? Import</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Changelog Tab -->
+            <div id="changelog" class="tab-content">
+                <div class="section-title"><span data-i18n="historyTitle">Project History</span> <span
+                        style="font-size: 10px; opacity: 0.6; margin-left: 8px;"
+                        id="changelog-current-version">v4.3.0</span></div>
+                <div class="changelog-container">
+                    <div class="version-entry">
+                        <div class="version-header">v4.3.0 - Sync, Feedback & Backup</div>
+                        <ul class="version-list">
+                            <li>⚙️ Settings now sync automatically across all Chrome devices with the same Google account.</li>
+                            <li>💾 Dual-Storage system: settings are saved in both sync and local — never lost after reload.</li>
+                            <li>⬇️ Export / ⬆️ Import settings as a JSON backup file (Settings tab).</li>
+                            <li>💬 New Feedback tab with direct link to the feedback form.</li>
+                            <li>🚫 Block button repositioned inline next to channel names (not on thumbnails) for clarity.</li>
+                            <li>All 5 languages updated with new translations.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v4.2.0 - Channel Blocking</div>
+                        <ul class="version-list">
+                            <li>New dedicated "Blocked" tab for complete channel management.</li>
+                            <li>🚫 Block button next to channel names on all YouTube pages.</li>
+                            <li>Channels can also be blocked manually by typing the handle in the popup.</li>
+                            <li>Blocked channels are hidden immediately everywhere on YouTube.</li>
+                            <li>Sidebar toggle bug fixes (Explore, Shorts, Legal) fully resolved.</li>
+                            <li>All 5 languages updated with new blocked channels translations.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v4.1.3 - UI Polish & Sorting</div>
+                        <ul class="version-list">
+                            <li>Dynamic version displays from manifest.</li>
+                            <li>Added sorting options for blocked channels (Alphabetical, Chronological, Reverse
+                                Chronological).</li>
+                            <li>Up-to-date changelog integration.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v4.1.2 - Channel Blocking</div>
+                        <ul class="version-list">
+                            <li>Introduced complete channel blocking functionality.</li>
+                            <li>New "Blocked" tab to manage completely hidden channels.</li>
+                            <li>Inline block button on YouTube video cards.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v4.1.1 - Stability Patch</div>
+                        <ul class="version-list">
+                            <li>Fixed regressions in settings persistence.</li>
+                            <li>Restored Icons in Emoji Theme Selector.</li>
+                            <li>Improved loading sequence for smoother UI.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v4.1.0 - Manual Language Switch</div>
+                        <ul class="version-list">
+                            <li>Added manual language selector in Settings tab.</li>
+                            <li>Custom i18n engine allows overriding browser locale.</li>
+                            <li>Instant UI refresh on language change.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v4.0.0 - Global Localization (i18n)</div>
+                        <ul class="version-list">
+                            <li>Full support for EN, DE, TR, ES, FR.</li>
+                            <li>Dynamic Translation engine (data-i18n).</li>
+                            <li>Translated Store Metadata in manifest.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v3.3.3 - Layout Support</div>
+                        <ul class="version-list">
+                            <li>Added support for YouTube's new "yt-lockup" layout.</li>
+                            <li>Fixed "Ends With" bug by bypassing hidden duration metadata.</li>
+                            <li>Implemented URL-decoding for Turkish handles (@ÇokGüz...).</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v3.3 - Precision Filters</div>
+                        <ul class="version-list">
+                            <li>Added match types: Contains, Starts With, Ends With, Exactly.</li>
+                            <li>Implemented Turkish Locale Support (tr-TR) for dotless-i.</li>
+                            <li>Added Hide/Show mode toggle for keyword rules.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v3.2 - Title Keywords</div>
+                        <ul class="version-list">
+                            <li>Initial Title Keyword Filtering engine.</li>
+                            <li>Case-insensitive substring matching.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v3.1 - Personalization</div>
+                        <ul class="version-list">
+                            <li>New Settings Tab for Customization.</li>
+                            <li>Dynamic Accent Color engine (Color Picker + Hex).</li>
+                            <li>Emoji Theme Preset selector (Classic, Privacy, Check).</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v3.0 - Design Revolution</div>
+                        <ul class="version-list">
+                            <li>Complete UI Redesign (Modern Red/Dark Gloss Theme).</li>
+                            <li>Standardized 500x600px Zero-Scroll layout.</li>
+                            <li>Polished animations and tab transitions.</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry">
+                        <div class="version-header">v2.x - Detox Features</div>
+                        <ul class="version-list">
+                            <li>Sidepanel Detox (Hide Shorts, Subs, Explore).</li>
+                            <li>Auto-Expand Subscriptions logic.</li>
+                            <li>Channel Duration Rules (Min/Max).</li>
+                        </ul>
+                    </div>
+                    <div class="version-entry" style="border-bottom:none;">
+                        <div class="version-header">v1.0 - Initial Release</div>
+                        <ul class="version-list">
+                            <li>Basic Video Filtering engine.</li>
+                            <li>Manifest V3 migration.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Feedback -->
+            <div id="feedback" class="tab-content">
+                <div class="section-header">
+                    <h2 data-i18n="feedbackHeader">Your Feedback Matters</h2>
+                    <p data-i18n="feedbackSub">Help us improve YT Filter with your ideas and reports.</p>
+                </div>
+                <div class="feedback-body">
+                    <div class="feedback-icon">💬</div>
+                    <p class="feedback-text" data-i18n="feedbackText">Found a bug? Have an idea for a new feature? We'd love to hear from you! Your feedback helps us make YT Filter better for everyone.</p>
+                    <div class="feedback-categories">
+                        <div class="feedback-tag">🐛 <span data-i18n="feedbackBug">Bug Reports</span></div>
+                        <div class="feedback-tag">💡 <span data-i18n="feedbackIdea">Feature Ideas</span></div>
+                        <div class="feedback-tag">⭐ <span data-i18n="feedbackGeneral">General Feedback</span></div>
+                    </div>
+                    <button id="open-feedback-form" class="feedback-btn" data-i18n="feedbackBtn">📝 Send Feedback</button>
+                    <p class="feedback-note" data-i18n="feedbackNote">Opens a short Google Form in a new tab. No account required.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>

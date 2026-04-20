@@ -1,0 +1,275 @@
+﻿{
+    "extName":  {
+                    "message":  "YouTube Video Filter (Erweitert)"
+                },
+    "extDesc":  {
+                    "message":  "HochprÃ¤ziser Content-Detox: Filtern nach Kanal, Dauer und Keywords mit lokaler Zeichenerkennung."
+                },
+    "tabGeneral":  {
+                       "message":  "Allgemein"
+                   },
+    "tabSidepanel":  {
+                         "message":  "Seitenleiste"
+                     },
+    "tabChannels":  {
+                        "message":  "KanÃ¤le"
+                    },
+    "tabSettings":  {
+                        "message":  "Einstellungen"
+                    },
+    "tabChangelog":  {
+                         "message":  "Changelog"
+                     },
+    "generalHeader":  {
+                          "message":  "Allgemeine Einstellungen"
+                      },
+    "generalSub":  {
+                       "message":  "Globale Detox- und Weiterleitungskontrollen."
+                   },
+    "redirectHome":  {
+                         "message":  "Home nach Subs umleiten"
+                     },
+    "hideHomeFeed":  {
+                         "message":  "Home-Feed ausblenden"
+                     },
+    "hideSidebar":  {
+                        "message":  "Ã„hnliche Videos ausblenden"
+                    },
+    "hideComments":  {
+                         "message":  "Kommentare ausblenden"
+                     },
+    "hideTrending":  {
+                         "message":  "Trends/Entdecken ausblenden"
+                     },
+    "hideShorts":  {
+                       "message":  "Shorts ausblenden (Global)"
+                   },
+    "hideEndscreen":  {
+                          "message":  "Endbildschirm ausblenden"
+                      },
+    "hideNotifications":  {
+                              "message":  "Glocke/Benachrichtigung aus"
+                          },
+    "languageLabel":  {
+                          "message":  "Sprache"
+                      },
+    "sidepanelHeader":  {
+                            "message":  "Seitenleisten-Optionen"
+                        },
+    "sidepanelSub":  {
+                         "message":  "Einzelne Bereiche in der Sidebar verstecken."
+                     },
+    "sideHideHome":  {
+                         "message":  "Home verstecken"
+                     },
+    "sideHideShorts":  {
+                           "message":  "Shorts verstecken"
+                       },
+    "sideHideSubs":  {
+                         "message":  "Abos verstecken"
+                     },
+    "sideHideYou":  {
+                        "message":  "Ich (You) verstecken"
+                    },
+    "sideHideExplore":  {
+                            "message":  "Entdecken verstecken"
+                        },
+    "sideHideMore":  {
+                         "message":  "Mehr von YT verstecken"
+                     },
+    "sideHideHistory":  {
+                            "message":  "Bericht-Verlauf verstecken"
+                        },
+    "sideHideLegal":  {
+                          "message":  "Rechtliches verstecken"
+                      },
+    "sideAutoExpand":  {
+                           "message":  "Abos automatisch ausklappen"
+                       },
+    "channelsHeader":  {
+                           "message":  "Kanal-Regeln"
+                       },
+    "channelsSub":  {
+                        "message":  "Individuelle Filter fÃ¼r deine KanÃ¤le."
+                    },
+    "addBtn":  {
+                   "message":  "HinzufÃ¼gen"
+               },
+    "sortLabel":  {
+                      "message":  "Sortieren"
+                  },
+    "filterLabel":  {
+                        "message":  "Filtern"
+                    },
+    "sortRecent":  {
+                       "message":  "Neu"
+                   },
+    "sortAlpha":  {
+                      "message":  "A-Z"
+                  },
+    "sortOldest":  {
+                       "message":  "Ã„lteste zuerst"
+                   },
+    "sortNewest":  {
+                       "message":  "Neueste zuerst"
+                   },
+    "filterAll":  {
+                      "message":  "Alle"
+                  },
+    "filterShorts":  {
+                         "message":  "Shorts erlaubt"
+                     },
+    "filterComments":  {
+                           "message":  "Kommentare erlaubt"
+                       },
+    "filterEndscreen":  {
+                            "message":  "Endbildschirm erlaubt"
+                        },
+    "filterBell":  {
+                       "message":  "Glocke erlaubt"
+                   },
+    "filterDuration":  {
+                           "message":  "Mit Limit"
+                       },
+    "deleteAllRules":  {
+                           "message":  "Alle Regeln lÃ¶schen"
+                       },
+    "settingsHeader":  {
+                           "message":  "Design \u0026 Einstellungen"
+                       },
+    "settingsSub":  {
+                        "message":  "Farben und Icons personalisieren."
+                    },
+    "accentColor":  {
+                        "message":  "Akzentfarbe (Hex)"
+                    },
+    "lightMode":  {
+                      "message":  "Heller Modus"
+                  },
+    "emojiTheme":  {
+                       "message":  "Emoji-Themen"
+                   },
+    "emojiVis":  {
+                     "message":  "An"
+                 },
+    "emojiHid":  {
+                     "message":  "Aus"
+                 },
+    "emojiYes":  {
+                     "message":  "Ja"
+                 },
+    "emojiNo":  {
+                    "message":  "Nein"
+                },
+    "historyTitle":  {
+                         "message":  "Projekt-Historie"
+                     },
+    "ruleKeywords":  {
+                         "message":  "Keywords eingeben (Komma getrennt)..."
+                     },
+    "ruleModeHide":  {
+                         "message":  "Verstecken wenn Match"
+                     },
+    "ruleModeShow":  {
+                         "message":  "Nur zeigen wenn Match"
+                     },
+    "matchContains":  {
+                          "message":  "EnthÃ¤lt"
+                      },
+    "matchStarts":  {
+                        "message":  "Beginnt mit"
+                    },
+    "matchEnds":  {
+                      "message":  "Endet mit"
+                  },
+    "matchExact":  {
+                       "message":  "Exakt"
+                   },
+    "labelMin":  {
+                     "message":  "Min"
+                 },
+    "labelMax":  {
+                     "message":  "Max"
+                 },
+    "labelMinutes":  {
+                         "message":  "Min."
+                     },
+    "labelShorts":  {
+                        "message":  "Shorts"
+                    },
+    "labelComments":  {
+                          "message":  "Komm."
+                      },
+    "labelEndscreen":  {
+                           "message":  "Endscr."
+                       },
+    "labelBell":  {
+                      "message":  "Glocke"
+                  },
+    "btnDelete":  {
+                      "message":  "LÃ¶schen"
+                  },
+    "placeholderChannel":  {
+                               "message":  "@KanalHandle"
+                           },
+    "tabBlocked":  {
+                       "message":  "Blockiert"
+                   },
+    "blockedHeader":  {
+                          "message":  "Blockierte KanÃ¤le"
+                      },
+    "blockedSub":  {
+                       "message":  "Diese KanÃ¤le werden Ã¼berall auf YouTube versteckt."
+                   },
+    "blockBtn":  {
+                     "message":  "ðŸš« Blockieren"
+                 },
+    "unblockBtn":  {
+                       "message":  "Freigeben"
+                   },
+    "unblockAllBtn":  {
+                          "message":  "Alle freigeben"
+                      },
+    "noBlocked":  {
+                      "message":  "Noch keine blockierten KanÃ¤le. Blockiere einen Kanal, um ihn Ã¼berall zu verstecken."
+                  },
+    "tabFeedback":  {
+                        "message":  "Feedback"
+                    },
+    "feedbackHeader":  {
+                           "message":  "Dein Feedback zÃ¤hlt"
+                       },
+    "feedbackSub":  {
+                        "message":  "Hilf uns, YT Filter mit deinen Ideen und Meldungen zu verbessern."
+                    },
+    "feedbackText":  {
+                         "message":  "Einen Bug gefunden? Eine Idee fÃ¼r ein neues Feature? Wir freuen uns Ã¼ber dein Feedback! Es hilft uns, YT Filter fÃ¼r alle besser zu machen."
+                     },
+    "feedbackBug":  {
+                        "message":  "Fehler melden"
+                    },
+    "feedbackIdea":  {
+                         "message":  "Feature-Ideen"
+                     },
+    "feedbackGeneral":  {
+                            "message":  "Allgemeines Feedback"
+                        },
+    "feedbackBtn":  {
+                        "message":  "ðŸ“ Feedback senden"
+                    },
+    "feedbackNote":  {
+                         "message":  "Ã–ffnet ein kurzes Google-Formular in einem neuen Tab. Kein Konto nÃ¶tig."
+                     },
+    "backupLabel":  {
+                        "message":  "Backup \u0026 Wiederherstellen"
+                    },
+    "backupHint":  {
+                       "message":  "Exportiere deine Einstellungen vor der Deinstallation. Importiere sie danach wieder."
+                   },
+    "exportBtn":  {
+                      "message":  "⬇️ Exportieren"
+                  },
+    "importBtn":  {
+                      "message":  "⬆️ Importieren"
+                  }
+}
