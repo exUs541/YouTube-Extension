@@ -2,16 +2,15 @@
 // BACKGROUND SERVICE WORKER
 // ════════════════════════════════════════════════════════════
 //
-// Dieser Service Worker läuft im Hintergrund und übernimmt Aufgaben,
-// die nicht im Popup ausgeführt werden können.
+// This service worker runs in the background and handles tasks
+// that cannot be executed in the popup or content script.
 //
-// AKTUELL:
-//   - Setzt die Deinstallations-URL, die Chrome öffnet wenn der User
-//     die Extension deinstalliert. Die Seite erinnert dann daran,
-//     die Einstellungen vorher zu exportieren.
+// CURRENTLY:
+//   - Sets the uninstallation URL that Chrome opens when the user
+//     uninstalls the extension. This page serves as a feedback form.
 //
 
-// Deinstallations-URL setzen (wird von Chrome beim Deinstallieren geöffnet):
+// Set the uninstall URL (opened by Chrome upon uninstallation):
 chrome.runtime.setUninstallURL('https://forms.gle/ekH8ym617Pa1zcHD7');
-// Hinweis: Wir nutzen hier das Feedback-Formular als Abschiedsseite.
-// Du kannst diese URL durch eine eigene HTML-Seite ersetzen falls gewünscht.
+// Note: We are using the feedback form as the farewell page.
+// You can replace this URL with your own HTML page if desired.

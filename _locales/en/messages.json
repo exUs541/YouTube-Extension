@@ -1,4 +1,4 @@
-﻿{
+{
     "extName":  {
                     "message":  "YouTube Channel Blocker \u0026 Video Filter"
                 },
@@ -33,7 +33,7 @@
                          "message":  "Hide Home Feed"
                      },
     "hideSidebar":  {
-                        "message":  "Hide Related Sidebar"
+                        "message":  "Hide Related Videos (Watch Page)"
                     },
     "hideComments":  {
                          "message":  "Hide Comments"
@@ -82,6 +82,9 @@
                         },
     "sideHideLegal":  {
                           "message":  "Hide Legal"
+                      },
+    "sideHideGuide":  {
+                          "message":  "Hide Main Navigation Sidebar"
                       },
     "sideAutoExpand":  {
                            "message":  "Auto-expand Subscriptions"

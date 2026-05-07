@@ -3,16 +3,16 @@
 // ════════════════════════════════════════════════════════════
 //
 // WHY DUAL STORAGE?
-//   - chrome.storage.sync  → Wird über alle Geräte mit demselben
-//     Google-Konto synchronisiert. Kann beim Extension-Reload kurz
-//     leer sein, bis Google die Daten geliefert hat.
-//   - chrome.storage.local → Lokales Backup. Immer sofort verfügbar,
-//     bleibt auch nach Extension-Reload erhalten.
+//   - chrome.storage.sync  → Synchronized across all devices with the same
+//     Google account. Can be empty briefly after extension reload
+//     until Google provides the data.
+//   - chrome.storage.local → Local backup. Always immediately available,
+//     persists even after extension reload.
 //
-// STRATEGIE:
-//   Schreiben: Immer in BEIDE Speicher gleichzeitig.
-//   Lesen:     Erst sync, dann local als Fallback.
-//   → Einstellungen gehen NIE verloren, auch nicht nach Reload.
+// STRATEGY:
+//   Write: Always to BOTH storages simultaneously.
+//   Read:  First sync, then local as fallback.
+//   → Settings are NEVER lost, even after reload.
 //
 const STORAGE_KEYS = [
     'detoxSettings', 'sidepanelSettings', 'channelRules',
@@ -20,14 +20,14 @@ const STORAGE_KEYS = [
 ];
 
 /**
- * Speichert Daten in sync UND local gleichzeitig.
- * @param {object} data     - Key-Value Paare die gespeichert werden sollen
- * @param {function} [cb]   - Optionaler Callback nach dem Speichern
+ * Saves data to sync AND local simultaneously.
+ * @param {object} data     - Key-value pairs to be saved
+ * @param {function} [cb]   - Optional callback after saving
  */
 function storageSave(data, cb) {
-    // In Sync schreiben (geräteübergreifend):
+    // Write to Sync (cross-device):
     chrome.storage.sync.set(data, () => {
-        // Gleichzeitig lokales Backup aktualisieren:
+        // Simultaneously update local backup:
         chrome.storage.local.set(data, () => {
             if (cb) cb();
         });
@@ -35,16 +35,16 @@ function storageSave(data, cb) {
 }
 
 /**
- * Liest Daten — erst aus sync, dann aus local als Fallback.
- * Kombiniert beide Quellen intelligent: lokale Daten füllen Lücken in sync.
- * @param {string[]} keys   - Array von Schlüsseln die gelesen werden sollen
- * @param {function} cb     - Callback mit den gelesenen Daten
+ * Reads data — first from sync, then from local as fallback.
+ * Intelligently combines both sources: local data fills gaps in sync.
+ * @param {string[]} keys   - Array of keys to be read
+ * @param {function} cb     - Callback with the read data
  */
 function storageLoad(keys, cb) {
     chrome.storage.sync.get(keys, (syncData) => {
         const syncHasData = keys.some(k => syncData[k] !== undefined);
         if (syncHasData) {
-            // Sync hat Daten — aber ergänze fehlende Felder aus local (Fallback)
+            // Sync has data — but supplement missing fields from local (fallback)
             chrome.storage.local.get(keys, (localData) => {
                 const merged = {};
                 keys.forEach(k => {
@@ -53,12 +53,12 @@ function storageLoad(keys, cb) {
                 cb(merged);
             });
         } else {
-            // Sync ist leer (z.B. direkt nach Reload oder kein Google-Konto) →
-            // Vollständig aus local laden:
+            // Sync is empty (e.g. directly after reload or no Google account) →
+            // Load completely from local:
             chrome.storage.local.get(keys, (localData) => {
                 if (Object.keys(localData).length > 0) {
-                    console.log('[YTFilter] Sync leer — lade aus lokalem Backup.');
-                    // Lokale Daten in Sync zurückschreiben (für spätere Synchronisierung):
+                    console.log('[YTFilter] Sync empty — loading from local backup.');
+                    // Write local data back to sync (for later synchronization):
                     chrome.storage.sync.set(localData);
                 }
                 cb(localData);
@@ -195,6 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'side-hide-more': 'hideMoreFromYT',
                     'side-hide-report': 'hideReportHistory',
                     'side-hide-legal': 'hideLegal',
+                    'side-hide-guide': 'hideGuide',
                     'side-auto-expand-subs': 'autoExpandSubs'
                 };
                 val = settingsData.sidepanelSettings[map[id]] || false;
@@ -228,7 +229,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function saveGlobalState() {
-        // Speichert in sync UND local gleichzeitig:
+        // Saves to sync AND local simultaneously:
         storageSave(settingsData, notifyRefresh);
     }
 
@@ -252,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'side-hide-more': 'hideMoreFromYT',
                     'side-hide-report': 'hideReportHistory',
                     'side-hide-legal': 'hideLegal',
+                    'side-hide-guide': 'hideGuide',
                     'side-auto-expand-subs': 'autoExpandSubs'
                 };
                 const key = map[id];

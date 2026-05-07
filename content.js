@@ -1,15 +1,15 @@
 /**
  * ============================================================
  * YouTube Video Filter (Enhanced) – content.js
- * Version: 4.2.0
+ * Version: 4.3.2
  * ============================================================
  *
- * WAS MACHT DIESE DATEI?
+ * WHAT DOES THIS FILE DO?
  * ----------------------
- * Diese Datei ist das sogenannte "Content Script". Sie wird automatisch
- * von Chrome in jede YouTube-Seite injiziert, sobald du dort bist.
- * Das bedeutet: Wenn du youtube.com besuchst, läuft dieser Code
- * unsichtbar im Hintergrund und verändert die Seite nach deinen Einstellungen.
+ * This file is the "Content Script". It is automatically injected
+ * by Chrome into every YouTube page as soon as you are there.
+ * This means: When you visit youtube.com, this code runs
+ * invisibly in the background and modifies the page according to your settings.
  *
  * WIE KANNST DU DEN CODE ANPASSEN?
  * ----------------------------------
@@ -52,48 +52,43 @@
   };
 
   // ════════════════════════════════════════════════════════════
-  // SCHRITT 2: EINSTELLUNGEN AUS DEM BROWSER LADEN
+  // STEP 1: LOAD SETTINGS FROM BROWSER
   // ════════════════════════════════════════════════════════════
   //
-  // Diese Funktion liest die gespeicherten Einstellungen aus dem Browser
-  // und startet danach alle Filter-Funktionen.
-  //
-  // WIE FÜGE ICH EINE NEUE EINSTELLUNG HINZU?
-  // 1. Füge den Schlüssel in das Array bei chrome.storage.sync.get() hinzu
-  // 2. Speichere den Wert in der settings-Variable
-  // 3. Nutze ihn in einer der Filter-Funktionen
+  // This function reads the saved settings from the browser
+  // and then starts all filter functions.
   //
   function loadSettings() {
-    // Chrome liest folgende Schlüssel aus dem Sync-Speicher (geräteübergreifend):
+    // Chrome reads the following keys from sync storage (cross-device):
     chrome.storage.sync.get(
       ['detoxSettings', 'sidepanelSettings', 'channelRules', 'blockedVideos', 'blockedChannels', 'extensionEnabled'],
       (data) => {
 
-        // Wenn die Extension deaktiviert ist → alles rückgängig machen und aufhören
+        // If the extension is disabled → undo everything and stop
         if (data.extensionEnabled === false) {
           console.log('[YouTube Filter] Extension is DISABLED. Skipping all filters.');
           disableAll();
           return;
         }
 
-        // Daten in die settings-Variable kopieren (mit leeren Standardwerten als Fallback)
+        // Copy data into settings variable (with empty defaults as fallback)
         settings.detoxSettings    = data.detoxSettings    || {};
         settings.sidepanelSettings= data.sidepanelSettings|| {};
         settings.channelRules     = data.channelRules     || [];
         settings.blockedVideos    = data.blockedVideos    || [];
 
-        // WICHTIG: blockedChannels kann alte String-Einträge oder neue Objekte enthalten.
-        // Wir normalisieren alles zu Objekten mit { handle, name }.
+        // IMPORTANT: blockedChannels can contain old string entries or new objects.
+        // We normalize everything to objects with { handle, name }.
         settings.blockedChannels = (data.blockedChannels || []).map(b =>
           typeof b === 'string'
-            ? { handle: b, name: b }   // Alter Eintrag: String → in Objekt umwandeln
-            : b                         // Neuer Eintrag: ist schon ein Objekt
+            ? { handle: b, name: b }   // Old entry: String → convert to object
+            : b                         // New entry: already an object
         );
 
-        // Jetzt Funktionen aufrufen, die die Seite filtern:
-        initBaseStyles();       // CSS-Klassen für das Ausblenden einrichten
-        updateContextualUI();   // Klassen auf <body> anwenden (hide-shorts, etc.)
-        filterAll();            // Alle Videos auf der Seite filtern
+        // Call functions that filter the page:
+        initBaseStyles();       // Set up CSS classes for hiding
+        updateContextualUI();   // Apply classes to <body> (hide-shorts, etc.)
+        filterAll();            // Filter all videos on the page
         if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
       }
     );
@@ -109,26 +104,20 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // SCHRITT 3: CSS-STILE EINFÜGEN (das "Hide-System")
+  // STEP 2: INSERT CSS STYLES (The "Hide System")
   // ════════════════════════════════════════════════════════════
   //
-  // Wir fügen ein <style>-Tag in die YouTube-Seite ein.
-  // Darin definieren wir CSS-Regeln, die bestimmte Elemente ausblenden,
-  // WENN der <body> bestimmte Klassen hat (z.B. "hide-shorts").
+  // We insert a <style> tag into the YouTube page.
+  // In it, we define CSS rules that hide specific elements,
+  // IF the <body> has certain classes (e.g., "hide-shorts").
   //
-  // WIE FUNKTIONIERT DAS?
-  // .body.hide-shorts [...] { display: none !important; }
-  //   → Wenn <body class="hide-shorts"> ist, wird das Element unsichtbar.
-  //   → updateContextualUI() setzt/entfernt diese Klassen dynamisch.
-  //
-  // WIE FÜGE ICH EINE NEUE HIDE-REGEL HINZU?
-  // 1. Kopiere eine bestehende Regel, z.B.:
-  //    body.hide-xyz ytd-irgendwas { display: none !important; }
-  // 2. Ersetze "xyz" und "ytd-irgendwas" mit deinem Selektor
-  // 3. Setze die Klasse in updateContextualUI() mit body.classList.toggle()
+  // HOW DOES IT WORK?
+  // body.hide-shorts [...] { display: none !important; }
+  //   → If <body class="hide-shorts">, the element becomes invisible.
+  //   → updateContextualUI() sets/removes these classes dynamically.
   //
   function initBaseStyles() {
-    // Pruefe ob das Style-Tag schon existiert (damit wir es nicht doppelt einfügen)
+    // Check if the style tag already exists (so we don't insert it twice)
     let styleEl = document.getElementById('yt-filter-priority-styles');
     if (!styleEl) {
       styleEl = document.createElement('style');
@@ -198,12 +187,25 @@
         body.side-hide-report ytd-guide-entry-renderer:has(a[href="/reporthistory"]),
         body.side-hide-report ytd-guide-section-renderer:has(a[href="/reporthistory"]) { display: none !important; }
 
-        /* Rechtliches / Legal in der Sidebar */
+        /* Legal / Legal in the sidebar */
         body.side-hide-legal ytd-guide-footer-renderer,
         body.side-hide-legal #footer.ytd-guide-renderer,
         body.side-hide-legal ytd-guide-section-renderer:has(a[href="/reporthistory"]) { display: none !important; }
 
-        /* YouTube-Logo-Klick-Deaktivierung (für Home-Redirect) */
+        /* Full Navigation Sidebar Hide */
+        body.side-hide-guide ytd-guide-renderer,
+        body.side-hide-guide app-drawer#guide,
+        body.side-hide-guide ytd-mini-guide-renderer,
+        body.side-hide-guide #guide-spacer { display: none !important; }
+        
+        /* Ensure content takes full width when sidebar is hidden */
+        body.side-hide-guide ytd-app[guide-persistent-and-visible] #page-manager.ytd-app,
+        body.side-hide-guide ytd-app[guide-persistent-and-visible] #masthead-container.ytd-app { 
+            margin-left: 0 !important; 
+            padding-left: 0 !important;
+        }
+
+        /* YouTube-Logo Click Deactivation (for Home-Redirect) */
         body.yt-redirect-logo a#logo { pointer-events: none; }
 
         /* ════════════════════════════════════════════════════
@@ -243,6 +245,13 @@
 
         /* Beim Hover direkt über den Button: Voll sichtbar + leicht vergrößert */
         .ytf-block-btn:hover { opacity: 1 !important; transform: scale(1.3); }
+
+        /* ── YouTube-Logo Anpassung (Playbutton → Filter) ── */
+        /* Verstecke das weiße Play-Dreieck im Logo */
+        ytd-topbar-logo-renderer #logo-icon svg g g:first-child path:nth-child(2),
+        #logo-icon svg g g:first-child path:nth-child(2) {
+          display: none !important;
+        }
       `;
       document.head.appendChild(styleEl);
     }
@@ -250,21 +259,16 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // SCHRITT 4: BODY-KLASSEN AKTUALISIEREN (Hauptfilter-Schalter)
+  // STEP 3: UPDATE BODY CLASSES (Main Filter Switches)
   // ════════════════════════════════════════════════════════════
   //
-  // Diese Funktion liest die aktuellen Einstellungen und setzt/entfernt
-  // CSS-Klassen auf dem <body>-Element der YouTube-Seite.
+  // This function reads the current settings and sets/removes
+  // CSS classes on the <body> element of the YouTube page.
   //
-  // BEISPIEL: Wenn hideShorts = true
+  // EXAMPLE: If hideShorts = true
   //   → body.classList.toggle('hide-shorts', true)
   //   → <body class="hide-shorts">
-  //   → Die CSS-Regel "body.hide-shorts ytd-...-shorts { display:none }" greift
-  //
-  // WIE FÜGE ICH EINEN NEUEN SCHALTER HINZU?
-  // 1. Füge einen Eintrag in detoxSettings (popup.js) hinzu
-  // 2. Füge hier eine body.classList.toggle()-Zeile hinzu
-  // 3. Definiere die CSS-Regel in initBaseStyles()
+  //   → The CSS rule "body.hide-shorts ytd-...-shorts { display:none }" takes effect
   //
   function updateContextualUI() {
     const d = settings.detoxSettings;       // Abkürzung für detoxSettings
@@ -313,20 +317,21 @@
     body.classList.toggle('side-hide-more',    !!s.hideMoreFromYT);
     body.classList.toggle('side-hide-report',  !!s.hideReportHistory);
     body.classList.toggle('side-hide-legal',   !!s.hideLegal);
+    body.classList.toggle('side-hide-guide',   !!s.hideGuide);
 
     handleRedirection(activeRules.redirectHomeToSubs);
   }
 
 
   // ════════════════════════════════════════════════════════════
-  // HILFSFUNKTION: Abonnements automatisch aufklappen
+  // HELPER FUNCTION: Auto-expand Subscriptions
   // ════════════════════════════════════════════════════════════
   //
-  // Klickt den "Mehr anzeigen"-Button in der Abonnements-Liste
-  // der Seitenleiste, wenn die Einstellung "autoExpandSubs" aktiv ist.
+  // Clicks the "Show more" button in the subscriptions list
+  // of the sidebar if the "autoExpandSubs" setting is active.
   //
   function autoExpandSubscriptions() {
-    // Suche den "Mehr anzeigen"-Button in der Abonnements-Sektion:
+    // Search for the "Show more" button in the subscriptions section:
     const expander = document.querySelector(
       'ytd-guide-section-renderer:has(a[href="/feed/subscriptions"]) #expander-item'
     );
@@ -344,18 +349,18 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // HILFSFUNKTION: Aktuellen Kanal der Seite ermitteln
+  // HELPER FUNCTION: Determine the current channel of the page
   // ════════════════════════════════════════════════════════════
   //
-  // Diese Funktion erkennt, auf welcher Kanal-Seite wir uns befinden.
-  // Wird genutzt für:
-  // 1. Kanal-spezifische Regeln in updateContextualUI()
-  // 2. den "Block Channel"-Button auf Kanal-Seiten
+  // This function identifies which channel page we are currently on.
+  // Used for:
+  // 1. Channel-specific rules in updateContextualUI()
+  // 2. The "Block Channel" button on channel pages
   //
-  // GIBT ZURÜCK: { text: "Kanal-Name", handle: "@KanalHandle" }
+  // RETURNS: { text: "Channel-Name", handle: "@ChannelHandle" }
   //
   function getCurrentPageChannel() {
-    // Strategie 1: Kanal-Name aus dem Header der Kanal-Seite lesen
+    // Strategy 1: Read channel name from the header of the channel page
     const headerName =
       document.querySelector('#channel-header #channel-name #text') ||
       document.querySelector('#inner-header-container #channel-name #text');
@@ -384,18 +389,48 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // HILFSFUNKTION: Startseiten-Weiterleitung (Home → Abonnements)
+  // HELPER FUNCTION: Customize YouTube Logo (Play → Filter)
   // ════════════════════════════════════════════════════════════
   //
-  // Wenn "Redirect Home to Subs" aktiv ist, wird der Benutzer automatisch
-  // von youtube.com auf youtube.com/feed/subscriptions weitergeleitet.
+  // Replaces the white play triangle in the YouTube logo with a 
+  // funnel symbol (filter) to strengthen the extension's branding.
+  //
+  function replaceLogoIcon() {
+    // Find the container that holds the paths for the red box and the triangle:
+    const logoIconGroup = document.querySelector(
+      'ytd-topbar-logo-renderer #logo-icon svg g g:first-child, #logo-icon svg g g:first-child'
+    );
+
+    if (logoIconGroup && !logoIconGroup.querySelector('.ytf-filter-logo-path')) {
+      const paths = logoIconGroup.querySelectorAll('path');
+      // The triangle is usually the second path in the first group element
+      if (paths.length >= 2) {
+        // The triangle is already hidden via CSS (initBaseStyles).
+        // We add our filter icon (funnel) here:
+        const filterPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        // Path for a funnel icon (filter), adjusted to the YouTube logo size:
+        filterPath.setAttribute('d', 'M9 7.5h10.5l-4.2 4.8v4.2l-2.1 2.1v-6.3l-4.2-4.8z');
+        filterPath.setAttribute('fill', '#FFFFFF');
+        filterPath.setAttribute('class', 'ytf-filter-logo-path');
+        logoIconGroup.appendChild(filterPath);
+      }
+    }
+  }
+
+
+  // ════════════════════════════════════════════════════════════
+  // HELPER FUNCTION: Home Page Redirection (Home → Subscriptions)
+  // ════════════════════════════════════════════════════════════
+  //
+  // If "Redirect Home to Subs" is active, the user is automatically
+  // redirected from youtube.com to youtube.com/feed/subscriptions.
   //
   function handleRedirection(enabled) {
     if (!enabled) return;
     const isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
     if (isHome) window.location.replace('/feed/subscriptions');
 
-    // YouTube-Logo-Klick abfangen (verhindert, dass man zurück zur Startseite kommt):
+    // Intercept YouTube logo click (prevents going back to the home page):
     const logo = document.querySelector('a#logo');
     if (logo && !logo.dataset.intercepted) {
       logo.addEventListener('click', (e) => {
@@ -404,23 +439,23 @@
           window.location.href = '/feed/subscriptions';
         }
       });
-      logo.dataset.intercepted = 'true'; // Merke, dass wir schon einen Listener haben
+      logo.dataset.intercepted = 'true'; // Note that we already have a listener
     }
   }
 
 
   // ════════════════════════════════════════════════════════════
-  // FILTER-LOGIK: Hilfsfunktionen
+  // FILTER LOGIC: Helper Functions
   // ════════════════════════════════════════════════════════════
 
   /**
-   * Zeitstring (z.B. "1:23:45" oder "5:30") in Sekunden umrechnen.
-   * Wird genutzt um Min/Max-Dauer-Filter anzuwenden.
-   * Gibt null zurück, wenn der String kein gültiges Format hat.
+   * Converts a time string (e.g., "1:23:45" or "5:30") into seconds.
+   * Used to apply min/max duration filters.
+   * Returns null if the string doesn't have a valid format.
    *
-   * BEISPIELE:
-   *   "1:30"    → 90 Sekunden
-   *   "1:00:00" → 3600 Sekunden
+   * EXAMPLES:
+   *   "1:30"    → 90 seconds
+   *   "1:00:00" → 3600 seconds
    *   "abc"     → null
    */
   function parseDuration(timeStr) {
@@ -435,14 +470,14 @@
   }
 
   /**
-   * Den Zeitstempel-Text (z.B. "5:30") aus einem Video-Karten-Element lesen.
-   * Der Zeitstempel wird als Badge auf dem Thumbnail angezeigt.
+   * Reads the timestamp text (e.g., "5:30") from a video card element.
+   * The timestamp is displayed as a badge on the thumbnail.
    *
-   * HINWEIS: YouTube nutzt verschiedene Elemente für den Badge.
-   * Wir probieren beide aus.
+   * NOTE: YouTube uses different elements for the badge.
+   * We try both.
    */
   function getDurationText(videoNode) {
-    // Suche nach dem Time-Badge:
+    // Search for the time badge:
     const badge = videoNode.querySelector(
       'ytd-thumbnail-overlay-time-status-renderer, yt-thumbnail-badge-view-model'
     );
@@ -458,68 +493,68 @@
   }
 
   /**
-   * Prüft ob ein Video ein YouTube Short ist.
-   * Nutzt 3 verschiedene Erkennungsmethoden für Robustheit.
+   * Checks if a video is a YouTube Short.
+   * Uses 3 different detection methods for robustness.
    *
-   * SHORTS sind:
-   * - Sehr kurze Videos (< 60 Sekunden)
-   * - Mit /shorts/ in der URL
-   * - Mit speziellem "SHORTS" Badge
+   * SHORTS are:
+   * - Very short videos (< 60 seconds)
+   * - With /shorts/ in the URL
+   * - With a special "SHORTS" badge
    */
   function isShort(videoNode) {
-    // Methode 1: URL enthält "/shorts/"
+    // Method 1: URL contains "/shorts/"
     const link = videoNode.querySelector('a[href*="/shorts/"]');
     if (link) return true;
 
-    // Methode 2: Das Overlay-Badge hat den Typ "SHORTS"
+    // Method 2: The overlay badge has the type "SHORTS"
     const overlay = videoNode.querySelector(
       'ytd-thumbnail-overlay-time-status-renderer[overlay-style="SHORTS"]'
     );
     if (overlay) return true;
 
-    // Methode 3: Das Shorts-Logo (SVG-Pfad) ist vorhanden
+    // Method 3: The shorts logo (SVG path) is present
     if (videoNode.querySelector('path[d^="m13.467 1.19"]')) return true;
 
-    return false; // Kein Short-Merkmal gefunden
+    return false; // No shorts characteristic found
   }
 
   /**
-   * Text normalisieren für Vergleiche.
-   * Wichtig für Türkisch: "I" (groß) → "ı" (klein ohne Punkt), nicht "i"
+   * Normalizes text for comparisons.
+   * Important for Turkish: "I" (upper) → "ı" (lower without dot), not "i"
    *
-   * BEISPIELE:
+   * EXAMPLES:
    *   "MrBeast"  → "mrbeast"
    *   "@CoolCat" → "@coolcat"
-   *   "%40Kanal" → "@kanal"  (URL-Dekodierung)
+   *   "%40Kanal" → "@kanal"  (URL-decoding)
    */
   function normalizeText(text) {
     if (!text) return '';
     try {
-      // Erst URL-Encoding auflösen (%40 → @, %C3%96 → Ö, etc.):
+      // First, resolve URL encoding (%40 → @, %C3%96 → Ö, etc.):
       const decoded = decodeURIComponent(text.toString());
-      // Dann Kleinschreibung mit türkischer Locale (für dotless-i Unterstützung):
+      // Then lower case with Turkish locale (for dotless-i support):
       return decoded.toLocaleLowerCase('tr-TR').trim();
     } catch (e) {
-      // Falls decodeURIComponent fehlschlägt (ungültige Kodierung):
+      // If decodeURIComponent fails (invalid encoding):
       return text.toString().toLocaleLowerCase('tr-TR').trim();
     }
   }
 
   /**
-   * Den Titel eines Videos aus einer Video-Karte lesen.
-   * Unterstützt sowohl das alte als auch das neue YouTube-Layout.
+   * Reads the title of a video from a video card element.
+   * Supports both old and new YouTube layouts.
    */
   function getVideoTitle(videoNode) {
-    // Versuche verschiedene Selektoren (YouTube wechselt diese gelegentlich):
+    // Try various selectors (YouTube occasionally changes these):
     const titleEl = videoNode.querySelector(
       'a#video-title, a#video-title-link, #video-title-link, #video-title, .yt-lockup-metadata-view-model__title'
     );
     if (!titleEl) return '';
 
-    // Das "title"-Attribut enthält meistens den saubersten Text:
+    // The "title" attribute usually contains the cleanest text:
     let attrTitle = titleEl.getAttribute('title');
 
-    // Fallback: Manchmal ist der Titel im übergeordneten <h3> Element:
+    // Fallback: Sometimes the title is in the parent <h3> element:
     if (!attrTitle) {
       const h3 = titleEl.closest('h3');
       if (h3) attrTitle = h3.getAttribute('title');
@@ -527,29 +562,26 @@
 
     if (attrTitle) return attrTitle.trim();
 
-    // Letzter Fallback: Direkt den Textinhalt lesen:
+    // Last fallback: Directly read the text content:
     return (titleEl.innerText || titleEl.textContent || '').replace(/\s\s+/g, ' ').trim();
   }
 
   /**
-   * Den Kanalname und den Handle (@...) aus einer Video-Karte lesen.
+   * Reads the channel name and the handle (@...) from a video card element.
    *
-   * YouTube hat 4 verschiedene Layouts. Wir versuchen alle 4 Strategien:
-   * - A: Klassisches Layout mit ytd-channel-name
-   * - B: Neues "lockup" Layout (yt-content-metadata-view-model)
-   * - C: Fallback über Channel-Links (/@handle)
-   * - D: yt-formatted-string Fallback
+   * YouTube has 4 different layouts. We try all 4 strategies:
+   * - A: Classic layout with ytd-channel-name
+   * - B: New "lockup" layout (yt-content-metadata-view-model)
+   * - C: Fallback via channel links (/@handle)
+   * - D: yt-formatted-string fallback
    *
-   * GIBT ZURÜCK: { text: "Kanal-Name", handle: "@handle", elFound: DOM-Element }
-   *
-   * HOW TO ADD A NEW STRATEGY:
-   * Kopiere einen der "Strategy X"-Blöcke und passe die querySelector-Selektoren an.
+   * RETURNS: { text: "Channel-Name", handle: "@handle", elFound: DOM-element }
    */
   function getChannelInfo(videoNode) {
     let text = '', handle = '', elFound = null;
 
-    // ── Strategie A: Klassisches ytd-Layout ─────────────────
-    // Sucht nach einem "a"-Link innerhalb von ytd-channel-name oder #channel-name:
+    // ── Strategy A: Classic ytd-layout ─────────────────
+    // Searches for an "a" link within ytd-channel-name or #channel-name:
     const classicLink = videoNode.querySelector(
       'ytd-channel-name a, #channel-name a, #byline-container a[href*="/@"], #byline-container a[href*="/channel/"]'
     );
@@ -663,52 +695,36 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // 🚫 BLOCK-BUTTON NEBEN DEM KANALNAMEN EINFÜGEN
+  // 🚫 INSERT BLOCK BUTTON NEXT TO CHANNEL NAME
   // ════════════════════════════════════════════════════════════
   //
-  // Der 🚫-Button erscheint IMMER direkt neben dem Kanalnamen.
-  // So ist sofort klar: "Ich blockiere diesen KANAL" (nicht das Video).
+  // The 🚫 button appears ALWAYS directly next to the channel name.
+  // This makes it clear: "I am blocking this CHANNEL" (not the video).
   //
-  // Diese Funktion nutzt das `elFound`-Element aus getChannelInfo(),
-  // das ist das DOM-Element das den Kanalnamen enthält.
-  // Der Button wird direkt daneben eingefügt (insertAdjacentElement).
-  //
-  // UNTERSTÜTZTE LAYOUTS:
-  // - Startseite:       ytd-channel-name > a (Kanalname als Link)
-  // - Suchergebnisse:   ytd-channel-name > a
-  // - Empfehlungsliste: span in yt-content-metadata-view-model (reiner Text)
-  // - Kanal-Seite:      eigener Button in processChannelPage()
-  //
-  // WIE ÄNDERE ICH DAS ICON?
-  // Ändere btn.textContent = '🚫' zu einem anderen Emoji, z.B.:
-  //   '❌' '✖' '🔇' '👁‍🗨' oder ein beliebiges Zeichen.
+  // This function uses the `elFound` element from getChannelInfo(),
+  // which is the DOM element containing the channel name.
+  // The button is inserted directly next to it (insertAdjacentElement).
   //
   function injectBlockButton(videoNode, chanName, chanHandle, chanElement) {
-    // Guard 1: Button schon eingefügt? → nichts tun
+    // Guard 1: Button already inserted? → do nothing
     if (videoNode.querySelector('.ytf-block-btn')) return;
 
-    // Guard 2: Kein Kanalname bekannt? → Abbrechen (wird beim nächsten Intervall erneut versucht)
+    // Guard 2: No channel name known? → cancel (will be retried in the next interval)
     if (!chanHandle && !chanName) return;
 
-    // ── Das Kanal-Element finden (wo der Button eingefügt wird) ────
-    // Priorität: Das übergebene chanElement > eigene Suche
-    //
-    // WICHTIG: Wir suchen nach VERSCHIEDENEN Selektoren, weil YouTube
-    // je nach Seitentyp unterschiedliche Elemente für den Kanalnamen nutzt.
-    //
-    let targetEl = chanElement;  // Das Element direkt neben dem Kanalnamen
+    // ── Find the channel element (where the button will be inserted) ────
+    let targetEl = chanElement;
 
     if (!targetEl) {
-      // Strategie 1: Klassisches Layout — ytd-channel-name enthält den Link
+      // Strategy 1: Classic layout — ytd-channel-name contains the link
       targetEl = videoNode.querySelector('ytd-channel-name yt-formatted-string#text');
     }
     if (!targetEl) {
-      // Strategie 2: Klassisches Layout — Link innerhalb von ytd-channel-name
+      // Strategy 2: Classic layout — link inside ytd-channel-name
       targetEl = videoNode.querySelector('ytd-channel-name a');
     }
     if (!targetEl) {
-      // Strategie 3: Neues Lockup-Layout — erster Span in den Metadaten
-      // Der Kanalname ist hier reiner Text (kein Link)
+      // Strategy 3: New lockup layout — first span in the metadata
       const metaEl =
         videoNode.querySelector('yt-content-metadata-view-model .yt-content-metadata-view-model__metadata-row') ||
         videoNode.querySelector('yt-content-metadata-view-model');
@@ -726,18 +742,18 @@
       }
     }
     if (!targetEl) {
-      // Strategie 4: Allgemeiner Fallback — irgendein Kanalname-Link
+      // Strategy 4: General fallback — any channel name link
       targetEl = videoNode.querySelector('#channel-name a, #byline-container a');
     }
 
-    // Kein Kanalnamen-Element gefunden → Abbrechen
+    // No channel name element found → cancel
     if (!targetEl) return;
 
-    // ── Button erstellen ───────────────────────────────────
+    // ── Create button ───────────────────────────────────
     const btn = document.createElement('button');
     btn.className = 'ytf-block-btn';
     btn.textContent = '🚫';
-    btn.title = `Block "${chanName || chanHandle}" — Alle Videos von diesem Kanal verstecken`;
+    btn.title = `Block "${chanName || chanHandle}" — Hide all videos from this channel`;
 
     // Click-Handler: Kanal blockieren
     btn.addEventListener('click', (e) => {
@@ -778,36 +794,30 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // KERN-FUNKTION: Ein einzelnes Video verarbeiten
+  // CORE FUNCTION: Process a single video
   // ════════════════════════════════════════════════════════════
   //
-  // Diese Funktion wird für JEDE Video-Karte auf der Seite aufgerufen.
-  // Sie entscheidet, ob ein Video sichtbar oder versteckt werden soll.
+  // This function is called for EVERY video card on the page.
+  // It decides whether a video should be visible or hidden.
   //
-  // REIHENFOLGE DER REGELN (von höchster zu niedrigster Priorität):
-  //   REGEL 0 → Blockierte Kanäle (immer versteckt, KEINE Ausnahmen)
-  //   REGEL 1 → Kanal-Titel-Keywords (zeige/verstecke basierend auf Titel)
-  //   REGEL 2 → Globale Shorts-Einstellung
-  //   REGEL 3 → Kanal-spezifische Regeln (Dauer, Shorts)
-  //
-  // WIE FÜGE ICH EINE NEUE FILTER-REGEL HINZU?
-  // 1. Lese den Wert aus settings.detoxSettings oder settings.channelRules
-  // 2. Setze shouldHide = true wenn der Filter greift
-  // 3. Füge eine forcedShow-Ausnahme hinzu wenn nötig
+  // RULE ORDER (highest to lowest priority):
+  //   RULE 0 → Blocked channels (always hidden, NO exceptions)
+  //   RULE 1 → Channel title keywords (show/hide based on title)
+  //   RULE 2 → Global shorts setting
+  //   RULE 3 → Channel-specific rules (duration, shorts)
   //
   function processVideo(videoNode) {
-    // Guard: Schon blockiert → nicht nochmal verarbeiten
+    // Guard: Already blocked → do not process again
     if (!videoNode || videoNode.dataset.filtered === 'true_blocked') return;
 
-    // Kanal-Informationen aus der Video-Karte lesen:
-    // elFound = das DOM-Element das den Kanalnamen enthält (für Button-Platzierung)
+    // Read channel information from the video card:
     const { text: chanName, handle: chanHandle, elFound: chanElement } = getChannelInfo(videoNode);
 
-    // Video-Informationen:
+    // Video information:
     const duration       = parseDuration(getDurationText(videoNode));
     const isAVideoShort  = isShort(videoNode);
 
-    // Normalisierte Versionen für Vergleiche (case-insensitiv, türkisch-kompatibel):
+    // Normalized versions for comparisons:
     const normChanHandle = normalizeText(chanHandle);
     const normChanName   = normalizeText(chanName);
 
@@ -954,124 +964,107 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // DOM-BEOBACHTER: Neue Videos automatisch filtern
+  // DOM OBSERVER: Automatically filter new videos
   // ════════════════════════════════════════════════════════════
   //
-  // YouTube lädt Videos dynamisch nach (Infinite Scroll, Navigation).
-  // Ein MutationObserver überwacht die Seite auf neue Elemente.
-  // Wenn ein neues Video-Element hinzugefügt wird → processVideo() aufrufen.
-  //
-  // HINWEIS: Wir fügen ytd-compact-video-renderer HIER hinzu, damit auch
-  // neue Empfehlungen in der Sidebar sofort gefiltert werden!
+  // YouTube loads videos dynamically (infinite scroll, navigation).
+  // A MutationObserver monitors the page for new elements.
+  // When a new video element is added → call processVideo().
   //
   const observer = new MutationObserver((mutations) => {
     updateContextualUI();
+    replaceLogoIcon();
     if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
 
-    // Alle Änderungen durchgehen:
+    // Go through all changes:
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
-        // Nur Elemente (keine Texte, keine Kommentare):
+        // Only elements (no text, no comments):
         if (node.nodeType !== 1) continue;
 
-        // Liste der Video-Elemente die wir beobachten:
         const videoSelectors = [
           'ytd-rich-item-renderer',
           'ytd-video-renderer',
           'ytd-grid-video-renderer',
-          'ytd-compact-video-renderer',  // ← Diese Zeile ist wichtig für die Sidebar!
+          'ytd-compact-video-renderer',
           'yt-lockup-view-model',
           'ytd-rich-grid-media',
           'ytd-reel-item-renderer'
         ];
 
-        // Fall A: Das neu hinzugefügte Element ist selbst ein Video-Element:
+        // Case A: The added node is a video element:
         if (videoSelectors.some(sel => node.matches && node.matches(sel))) {
           processVideo(node);
         } else {
-          // Fall B: Das Element enthält Video-Elemente (z.B. ein Container):
+          // Case B: The node contains video elements:
           videoSelectors.forEach(sel => node.querySelectorAll(sel).forEach(processVideo));
         }
       }
     }
   });
 
-  // Beobachtung starten (auf der ganzen ytd-app oder dem body-Element):
+  // Start observation:
   const target = document.querySelector('ytd-app') || document.body;
   observer.observe(target, { childList: true, subtree: true });
 
 
   // ════════════════════════════════════════════════════════════
-  // EXTENSION DEAKTIVIEREN (alles zurücksetzen)
+  // DISABLE EXTENSION (Reset everything)
   // ════════════════════════════════════════════════════════════
   //
-  // Wird aufgerufen wenn der Benutzer die Extension über den Toggle ausschaltet.
-  // Entfernt alle unsere CSS-Klassen und -Elemente von der Seite.
+  // Called when the user toggles the extension off.
+  // Removes all our CSS classes and elements from the page.
   //
   function disableAll() {
-    // Unsere Style-Tags entfernen:
+    // Remove our style tags:
     document.getElementById('yt-filter-priority-styles')?.remove();
 
-    // Alle unsere Body-Klassen entfernen:
+    // Remove all our body classes:
     document.body.className = document.body.className
       .replace(/\bhide-[^ ]+/g, '')
       .replace(/\bside-hide-[^ ]+/g, '');
 
-    // Alle ausgeblendeten Videos wieder einblenden:
+    // Show all hidden videos:
     document.querySelectorAll('[data-filtered]').forEach(el => {
       el.style.display = '';
       el.removeAttribute('hidden');
       el.dataset.filtered = '';
     });
 
-    // Alle unsere eingefügten Block-Buttons entfernen:
+    // Remove all our block buttons:
     document.querySelectorAll(
       '.ytf-block-btn, .ytf-block-channel-header, .ytf-block-channel-name-icon, .yt-filter-block-btn, .yt-filter-block-btn-header'
     ).forEach(el => el.remove());
 
-    // Logo-Redirect-Listener zurücksetzen:
+    // Reset logo redirect listener:
     const logo = document.querySelector('a#logo');
     if (logo) logo.dataset.intercepted = '';
   }
 
 
   // ════════════════════════════════════════════════════════════
-  // KANAL-SEITE: Block-Button einfügen
+  // CHANNEL PAGE: Insert block button
   // ════════════════════════════════════════════════════════════
   //
-  // Wenn der Benutzer eine YouTube-Kanal-Seite besucht (z.B. youtube.com/@MrBeast),
-  // werden zwei Block-Elemente eingefügt:
-  //
-  // 1. 🚫-Icon NEBEN DEM KANAL-NAMEN (Punkt 2 deiner Anfrage!)
-  //    → Klein und diskret, direkt im Titel
-  //    → CSS-Klasse: .ytf-block-channel-name-icon
-  //
-  // 2. "🚫 Block Channel"-BUTTON NEBEN DEM SUBSCRIBE-BUTTON
-  //    → Groß und gut sichtbar, rot
-  //    → CSS-Klasse: .ytf-block-channel-header
-  //
-  // WENN DER KANAL BEREITS BLOCKIERT IST:
-  //    → Weiterleitung zur Startseite (damit man nicht versehentlich die Seite sieht)
+  // When the user visits a channel page, two elements are inserted:
+  // 1. 🚫 icon NEXT TO THE CHANNEL NAME
+  // 2. "🚫 Block Channel" BUTTON NEXT TO SUBSCRIBE
   //
   function processChannelPage() {
     const path = window.location.pathname;
 
-    // Prüfen ob wir auf einer Kanal-Seite sind:
     const isChannelPage = path.startsWith('/@') ||
                           path.startsWith('/channel/') ||
                           path.startsWith('/c/');
     if (!isChannelPage) return;
 
-    // Kanal-Information von der aktuellen Seite holen:
     const { text: chanName, handle: chanHandle } = getCurrentPageChannel();
     const handleToBlock = chanHandle || chanName;
-    if (!handleToBlock) return; // Noch nicht geladen → nächster setInterval-Versuch
+    if (!handleToBlock) return;
 
-    // Normalisierte Versionen für Vergleiche:
     const normHandle = normalizeText(handleToBlock);
     const normName   = normalizeText(chanName);
 
-    // Prüfen ob dieser Kanal bereits blockiert ist:
     const isBlocked = (settings.blockedChannels || []).some(b => {
       const bHandle = normalizeText(typeof b === 'string' ? b : b.handle);
       const bName   = normalizeText(typeof b === 'string' ? b : (b.name || b.handle));
@@ -1079,14 +1072,11 @@
              bName   === normHandle || bName   === normName;
     });
 
-    // Bereits blockiert → sofort weiterleiten:
     if (isBlocked) {
       window.location.replace('/');
       return;
     }
 
-    // ── Block-Button-Logik (gemeinsam genutzte Funktion) ────
-    // Erstellt den "Kanal blockieren"-Handler für beide Buttons:
     const blockThisChannel = () => {
       if (confirm(`Block "${chanName || handleToBlock}"? All videos from this channel will be hidden everywhere.`)) {
         chrome.storage.sync.get(['blockedChannels'], (data) => {
@@ -1097,21 +1087,15 @@
             list.push({ handle: handleToBlock, name: chanName || handleToBlock, addedAt: Date.now() });
             settings.blockedChannels = list;
             chrome.storage.sync.set({ blockedChannels: list }, () => {
-              window.location.replace('/'); // Zur Startseite zurück nach dem Blockieren
+              window.location.replace('/');
             });
           }
         });
       }
     };
 
-    // ── 1. 🚫-Icon neben dem Kanal-Namen ────────────────────
-    //
-    // Der Kanal-Name steht im Header der Kanal-Seite.
-    // WO? Meist in: #channel-name #text oder yt-dynamic-text-view-model
-    // Das Icon erscheint direkt dahinter als kleiner, klickbarer Emoji.
-    //
+    // 1. 🚫 icon next to the channel name
     if (!document.querySelector('.ytf-block-channel-name-icon')) {
-      // Verschiedene Selektoren für den Kanal-Titel im Header probieren:
       const channelTitleEl =
         document.querySelector('#page-header yt-dynamic-text-view-model') ||
         document.querySelector('#channel-header #channel-name')           ||
@@ -1123,7 +1107,6 @@
         iconBtn.className = 'ytf-block-channel-name-icon';
         iconBtn.textContent = '🚫';
         iconBtn.title = `Block this channel`;
-        // Stil: Klein, inline, dezent – direkt neben dem Kanal-Namen
         Object.assign(iconBtn.style, {
           background:    'none',
           border:        'none',
@@ -1145,30 +1128,23 @@
           iconBtn.style.transform = 'scale(1)';
         });
         iconBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); blockThisChannel(); };
-        // Icon als letztes Kind des Titel-Elements einf ügen:
         channelTitleEl.appendChild(iconBtn);
       }
     }
 
-    // ── 2. "🚫 Block Channel"-Button neben Subscribe ────────
-    //
-    // Dieser große rote Button erscheint direkt neben dem Abonnieren-Button.
-    // Er ist gut sichtbar und für schnelles Blockieren gedacht.
-    //
+    // 2. "🚫 Block Channel" button next to subscribe
     if (!document.querySelector('.ytf-block-channel-header')) {
-      // Subscribe-Button finden (YouTube nutzt verschiedene Selektoren je nach Layout):
       const subscribeBtn =
         document.querySelector('ytd-subscribe-button-renderer') ||
         document.querySelector('yt-subscribe-button-shape')     ||
         document.querySelector('button[aria-label*="bbonn"]')   ||
         document.querySelector('button[aria-label*="ubscri"]');
 
-      if (!subscribeBtn) return; // Noch nicht geladen → nächster setInterval-Versuch
+      if (!subscribeBtn) return;
 
       const headerBtn = document.createElement('button');
       headerBtn.className = 'ytf-block-channel-header';
       headerBtn.textContent = '🚫 Block Channel';
-      // Stil ähnlich wie YouTube-eigene Buttons:
       Object.assign(headerBtn.style, {
         backgroundColor: '#cc0000',
         color:           'white',
@@ -1188,23 +1164,17 @@
       headerBtn.addEventListener('mouseenter', () => headerBtn.style.backgroundColor = '#aa0000');
       headerBtn.addEventListener('mouseleave', () => headerBtn.style.backgroundColor = '#cc0000');
       headerBtn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); blockThisChannel(); };
-
-      // Button direkt nach dem Subscribe-Button einfügen:
       subscribeBtn.insertAdjacentElement('afterend', headerBtn);
     }
   }
 
 
   // ════════════════════════════════════════════════════════════
-  // NACHRICHTEN-LISTENER: Befehle vom Popup empfangen
+  // MESSAGE LISTENER: Receive commands from popup
   // ════════════════════════════════════════════════════════════
   //
-  // Das Popup (popup.js) kann Nachrichten an dieses Content-Script senden.
-  // Aktuell wird nur 'refresh' genutzt, um die Einstellungen neu zu laden.
-  //
-  // WIE FÜGE ICH EINE NEUE NACHRICHT HINZU?
-  // 1. Hier: if (request.action === 'meineAktion') { ... }
-  // 2. Im Popup: chrome.tabs.sendMessage(tab.id, { action: 'meineAktion' })
+  // The popup (popup.js) can send messages to this content script.
+  // Currently only 'refresh' is used to reload settings.
   //
   chrome.runtime.onMessage.addListener((request) => {
     if (request.action === 'refresh') loadSettings();
@@ -1212,31 +1182,29 @@
 
 
   // ════════════════════════════════════════════════════════════
-  // START: Alles ausführen
+  // START: Execute everything
   // ════════════════════════════════════════════════════════════
 
-  // Beim ersten Laden sofort alles filtern:
+  // Filter everything immediately on first load:
   filterAll();
   processChannelPage();
+  replaceLogoIcon();
 
-  // Bei YouTube-Navigation (SPA: Single Page App Navigation):
-  // YouTube lädt Seiten ohne vollständigen Browser-Reload.
-  // Dieses Event wird ausgelöst wenn YouTube intern navigiert.
+  // On YouTube navigation (SPA: Single Page App Navigation):
   window.addEventListener('yt-navigate-finish', () => {
     updateContextualUI();
     if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
-    setTimeout(filterAll, 1000); // 1s warten bis die Seite gerendert ist
+    setTimeout(filterAll, 1000); // Wait 1s for page rendering
     processChannelPage();
+    replaceLogoIcon();
   });
 
-  // Backup: Alle 3 Sekunden nochmal alles filtern.
-  // Das fängt Elemente auf die der Observer oder navigate-finish Event verpasst hat.
-  // HINWEIS: Wenn du Performance-Probleme hast, erhöhe diesen Wert (z.B. 5000 = 5 Sekunden).
+  // Backup: Filter everything again every 3 seconds.
+  // This catches elements that the observer or navigate-finish event missed.
   setInterval(() => {
     filterAll();
     processChannelPage();
+    replaceLogoIcon();
   }, 3000);
 
-})(); // Ende der IIFE (Immediately Invoked Function Expression)
-     // Die () am Ende sorgt dafür, dass die Funktion sofort ausgeführt wird.
-     // Das schützt unsere Variablen vor Konflikten mit anderen Scripts.
+})(); // End of IIFE
