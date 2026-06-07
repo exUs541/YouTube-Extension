@@ -17,9 +17,9 @@
     "tabSettings":  {
                         "message":  "Settings"
                     },
-    "tabChangelog":  {
-                         "message":  "Changelog"
-                     },
+    "tabSocials":  {
+                        "message":  "Socials"
+                    },
     "generalHeader":  {
                           "message":  "General Settings"
                       },
@@ -83,6 +83,12 @@
     "sideHideLegal":  {
                           "message":  "Hide Legal"
                       },
+    "socialsHeader":  {
+                          "message":  "Connect with me"
+                      },
+    "socialsSub":  {
+                       "message":  "Follow for updates and support the project."
+                   },
     "sideHideGuide":  {
                           "message":  "Hide Main Navigation Sidebar"
                       },
@@ -236,33 +242,6 @@
     "noBlocked":  {
                       "message":  "No blocked channels yet. Block a channel to hide it everywhere."
                   },
-    "tabFeedback":  {
-                        "message":  "Feedback"
-                    },
-    "feedbackHeader":  {
-                           "message":  "Your Feedback Matters"
-                       },
-    "feedbackSub":  {
-                        "message":  "Help us improve YT Filter with your ideas and reports."
-                    },
-    "feedbackText":  {
-                         "message":  "Found a bug? Have an idea for a new feature? We\u0027d love to hear from you! Your feedback helps us make YT Filter better for everyone."
-                     },
-    "feedbackBug":  {
-                        "message":  "Bug Reports"
-                    },
-    "feedbackIdea":  {
-                         "message":  "Feature Ideas"
-                     },
-    "feedbackGeneral":  {
-                            "message":  "General Feedback"
-                        },
-    "feedbackBtn":  {
-                        "message":  "ðŸ“ Send Feedback"
-                    },
-    "feedbackNote":  {
-                         "message":  "Opens a short Google Form in a new tab. No account required."
-                     },
     "backupLabel":  {
                         "message":  "Backup \u0026 Restore"
                     },
@@ -274,5 +253,8 @@
                   },
     "importBtn":  {
                       "message":  "⬆️ Import Settings"
-                  }
+                  },
+    "syncNativeHide": {
+                        "message":  "Native Hide Sync (Beta)"
+                    }
 }

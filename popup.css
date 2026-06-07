@@ -1,4 +1,4 @@
-/* YouTube Filter v4.2.0 Sidebar & Customization Styles */
+/* YouTube Filter v4.4.0 Sidebar & Customization Styles */
 :root {
     --bg-color: #0f0f0f;
     --sidebar-bg: #161616;
@@ -11,16 +11,6 @@
     --input-bg: #2a2a2a;
 }
 
-body.light-theme {
-    --bg-color: #f9f9f9;
-    --sidebar-bg: #ffffff;
-    --card-bg: #ffffff;
-    --text-primary: #0f0f0f;
-    --text-secondary: #606060;
-    --border-color: rgba(0, 0, 0, 0.1);
-    --hover-bg: rgba(0, 0, 0, 0.05);
-    --input-bg: #f0f0f0;
-}
 
 * { box-sizing: border-box; }
 
@@ -291,37 +281,51 @@ input[type="number"] { background: var(--input-bg); border: 1px solid var(--bord
 ::-webkit-scrollbar { width: 4px; }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
 
-.changelog-container {
+/* ── Socials Tab ──────────────────────────── */
+.social-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 10px 0;
     flex: 1;
-    overflow-y: auto;
-    padding-right: 8px;
-    margin-top: 8px;
-    min-height: 0;
 }
-.changelog-container::-webkit-scrollbar { width: 4px; }
-.changelog-container::-webkit-scrollbar-track { background: transparent; }
-.changelog-container::-webkit-scrollbar-thumb { background: var(--accent-color); border-radius: 10px; }
 
-.version-entry {
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border-color);
-}
-.version-header {
-    font-size: 13px;
-    font-weight: 800;
-    color: var(--accent-color);
-    margin-bottom: 6px;
+.social-link {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px 10px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    gap: 8px;
 }
-.version-list {
-    margin: 0;
-    padding-left: 14px;
-    font-size: 10px;
-    color: var(--text-secondary);
-    list-style-type: "→ ";
+
+.social-link:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-color);
+    background: var(--hover-bg);
+    box-shadow: 0 8px 24px rgba(255, 0, 0, 0.1);
+    color: var(--accent-color);
 }
-.version-list li { margin-bottom: 4px; line-height: 1.4; }
+
+.social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.social-icon svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+}
 
 /* ── Blocked Channels Tab ─────────────────────────────── */
 .blocked-item {
@@ -375,82 +379,6 @@ input[type="number"] { background: var(--input-bg); border: 1px solid var(--bord
     font-size: 12px;
     padding: 30px 16px;
     line-height: 1.6;
-}
-
-/* ── Feedback Tab ──────────────────────────── */
-.feedback-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 20px;
-    text-align: center;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-}
-
-.feedback-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-    filter: grayscale(0.2);
-}
-
-.feedback-text {
-    font-size: 13px;
-    line-height: 1.7;
-    color: var(--text-secondary);
-    max-width: 280px;
-    margin: 0 0 20px 0;
-}
-
-.feedback-categories {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.feedback-tag {
-    font-size: 11px;
-    padding: 5px 12px;
-    border-radius: 20px;
-    background: var(--input-bg);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-    white-space: nowrap;
-}
-
-.feedback-btn {
-    background: var(--accent-color);
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 12px 32px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-    box-shadow: 0 4px 14px rgba(255, 0, 0, 0.25);
-    letter-spacing: 0.3px;
-}
-
-.feedback-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 0, 0, 0.35);
-    opacity: 0.95;
-}
-
-.feedback-btn:active {
-    transform: translateY(0);
-}
-
-.feedback-note {
-    font-size: 10px;
-    color: var(--text-secondary);
-    opacity: 0.6;
-    margin-top: 14px;
 }
 
 /* ── Backup & Restore Section ──────────────── */

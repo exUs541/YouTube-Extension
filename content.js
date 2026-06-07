@@ -479,17 +479,24 @@
   function getDurationText(videoNode) {
     // Search for the time badge:
     const badge = videoNode.querySelector(
-      'ytd-thumbnail-overlay-time-status-renderer, yt-thumbnail-badge-view-model'
+      'ytd-thumbnail-overlay-time-status-renderer, yt-thumbnail-badge-view-model, .yt-core-attributed-string--link-inherit-color'
     );
     if (badge) {
-      const textEl = badge.querySelector('div, span, #text');
+      // Also look for Aria-Label which often contains "1 minute, 30 seconds"
+      const aria = badge.getAttribute('aria-label');
+      if (aria && aria.includes(':')) return aria.trim();
+
+      const textEl = badge.querySelector('div, span, #text, label');
       if (textEl) {
         const text = textEl.innerText.trim();
-        // Prüfe, dass es wirklich eine Zeitangabe ist (enthält ":"):
         if (text.includes(':')) return text;
       }
     }
-    return null; // Kein Zeitstempel gefunden
+    // Fallback for new view models: search for any text containing ":"
+    const timeSpan = videoNode.querySelector('span[class*="time-status"], span[class*="badge"]');
+    if (timeSpan && timeSpan.innerText.includes(':')) return timeSpan.innerText.trim();
+
+    return null; 
   }
 
   /**
@@ -594,10 +601,27 @@
     }
 
     // ── Strategie B: Neues "lockup" Layout ──────────────────
-    // Im neuen Layout (yt-lockup-view-model) gibt es KEINEN <a>-Tag mit Kanal-URL.
-    // Der Kanalname steht als reiner Text in einem <span> in der Metadaten-Zeile.
-    // Struktur: yt-lockup-metadata-view-model > yt-content-metadata-view-model
-    //             > div.metadata-row > span (Kanalname) | span (Trenner) | span (Aufrufe)
+    const lockupMeta = videoNode.querySelector('yt-lockup-metadata-view-model');
+    if (lockupMeta) {
+        const contentMeta = lockupMeta.querySelector('yt-content-metadata-view-model');
+        if (contentMeta) {
+            const spans = contentMeta.querySelectorAll('span, a');
+            for (const sp of spans) {
+                const t = sp.textContent.trim();
+                if (!t || t === '|' || t === '•' || t === '·') continue;
+                if (/^\d[\d.,\s]*(Mio|Tsd|K|M|B|Aufrufe|views|vues|visualizaciones)/i.test(t)) continue;
+                if (/^vor\s/i.test(t) || /\bago$/i.test(t)) continue;
+                if (/^[\d.,\s]+$/.test(t)) continue;
+
+                text = t;
+                elFound = sp;
+                break;
+            }
+        }
+    }
+
+    if (!text) {
+      // Suche Metadaten-Spans im lockup-spezifischen Layout:
     // Der erste span mit Text ist der Kanalname.
     if (!text) {
       // Suche Metadaten-Spans im lockup-spezifischen Layout:
@@ -821,22 +845,20 @@
     const normChanHandle = normalizeText(chanHandle);
     const normChanName   = normalizeText(chanName);
 
-    // ═══ TEMPORÄRES DEBUG-LOG ═══
-    // Dieses Log erscheint in der Browser-Console (F12).
-    // Damit du sehen kannst, welcher Kanal erkannt wird.
-    // Kann später entfernt werden wenn alles funktioniert.
-    if (chanName || chanHandle) {
-      console.log('[YTF Debug] Video:', chanName, '|', chanHandle,
-        '| blocked:', settings.blockedChannels?.length || 0, 'channels',
-        '| tag:', videoNode.tagName);
-    }
-    // ═══ ENDE DEBUG-LOG ═══
-
     // Passende Kanal-Regel suchen (wenn vorhanden):
     const rule = settings.channelRules.find(r =>
       normalizeText(r.handle) === normChanHandle ||
       normalizeText(r.name)   === normChanName
     );
+
+    // ═══ TEMPORÄRES DEBUG-LOG ═══
+    if (chanName || chanHandle || duration) {
+      console.log(`[YTF Debug] Video: "${getVideoTitle(videoNode)}"`, 
+        `| Channel: ${chanName} (${chanHandle})`,
+        `| Duration: ${duration}s`,
+        `| Rule Found: ${rule ? 'YES' : 'NO'}`,
+        `| tag: ${videoNode.tagName}`);
+    }
 
     let shouldHide  = false; // Soll das Video versteckt werden?
     let forcedShow  = false; // Soll das Video IMMER gezeigt werden (überschreibt shouldHide)?
@@ -921,6 +943,11 @@
       videoNode.style.display = 'none';
       videoNode.setAttribute('hidden', 'true');
       videoNode.dataset.filtered = 'true_blocked';
+
+      // NEW: Trigger YouTube's internal hide function if enabled (using a queue)
+      if (settings.detoxSettings.syncNativeHide && !videoNode.dataset.nativelyHidden) {
+          addToNativeHideQueue(videoNode, isBlocked);
+      }
     } else {
       videoNode.style.display = '';
       videoNode.removeAttribute('hidden');
@@ -1206,5 +1233,139 @@
     processChannelPage();
     replaceLogoIcon();
   }, 3000);
+
+  // ════════════════════════════════════════════════════════════
+  // INTERNAL HIDE QUEUE: Process one hide action at a time
+  // ════════════════════════════════════════════════════════════
+  //
+  // Why a queue? 
+  //   YouTube only allows ONE menu to be open at a time.
+  //   If we try to click 10 buttons at once, they will cancel each other out.
+  //
+  let nativeHideQueue = [];
+  let isProcessingQueue = false;
+
+  function addToNativeHideQueue(videoNode, isChannelBlocked) {
+    if (videoNode.dataset.nativelyHidden) return;
+    videoNode.dataset.nativelyHidden = 'queued';
+    nativeHideQueue.push({ node: videoNode, isChannelBlocked });
+    processNativeHideQueue();
+  }
+
+  async function processNativeHideQueue() {
+    if (isProcessingQueue || nativeHideQueue.length === 0) return;
+    isProcessingQueue = true;
+
+    while (nativeHideQueue.length > 0) {
+      const task = nativeHideQueue.shift();
+      try {
+        await triggerNativeHide(task.node, task.isChannelBlocked);
+      } catch (err) {
+        console.error('[YTF] Queue Task Failed:', err);
+      }
+      // Wait a bit between actions to stay under the radar and let UI settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+
+    isProcessingQueue = false;
+  }
+
+  async function triggerNativeHide(videoNode, isChannelBlocked) {
+    videoNode.dataset.nativelyHidden = 'true';
+
+    // 1. Find the "three dots" menu button
+    const menuBtn = videoNode.querySelector(
+      'button[aria-label*="menu"], yt-icon-button#button, .dropdown-trigger, #menu button, [id="menu"] [id="button"]'
+    );
+    if (!menuBtn) {
+      console.debug('[YTF] No menu button found for video');
+      return;
+    }
+
+    // Temporarily show the video so the menu can be opened (YouTube logic)
+    const oldDisplay = videoNode.style.display;
+    const oldOpacity = videoNode.style.opacity;
+    const oldPosition = videoNode.style.position;
+
+    videoNode.style.setProperty('display', 'block', 'important');
+    videoNode.style.setProperty('opacity', '0.01', 'important');
+    videoNode.style.setProperty('position', 'relative', 'important');
+    videoNode.style.setProperty('min-height', '20px', 'important');
+
+    try {
+      console.debug('[YTF] Triggering menu for:', getVideoTitle(videoNode));
+      
+      // Emulate hover to ensure YouTube's menu logic is ready
+      menuBtn.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
+      menuBtn.scrollIntoView({ block: 'center', inline: 'center' });
+      
+      await new Promise(resolve => setTimeout(resolve, 100));
+      menuBtn.click();
+      
+      // 2. Wait for the menu and retry if items aren't loaded yet
+      for (let attempt = 0; attempt < 4; attempt++) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Search for menu items using broader selectors
+        const menuItems = document.querySelectorAll(
+          'ytd-menu-service-item-renderer, tp-yt-paper-item, ytd-menu-navigation-item-renderer, #items.ytd-menu-popup-renderer > *'
+        );
+
+        if (menuItems.length === 0) {
+          // If no items found, try clicking the button again (sometimes first click fails)
+          if (attempt === 1) menuBtn.click();
+          continue;
+        }
+
+        let targetItem = null;
+        const searchTerms = isChannelBlocked 
+          ? ['recommend', 'empfehlen', 'recomendar', 'recommander', 'kanal nicht', 'don\'t recommend'] 
+          : ['interested', 'interesse', 'interesa', 'intéressé', 'interessa', 'ausblenden', 'hide'];
+
+        // Path for "Not interested" icon (circle with slash) - matches your screenshot!
+        const hideIconPath = 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1c1.06 1.35 1.69 3.05 1.69 4.9 0 4.42-3.58 8-8 8z';
+
+        for (const item of menuItems) {
+          const text = (item.innerText || item.textContent || '').toLowerCase();
+          
+          // Strategy A: Match by text
+          const textMatch = searchTerms.some(term => text.includes(term));
+          
+          // Strategy B: Match by Icon Path (very robust)
+          let iconMatch = false;
+          const svgPath = item.querySelector('path');
+          if (svgPath && svgPath.getAttribute('d') === hideIconPath) {
+            iconMatch = true;
+          }
+
+          if (textMatch || iconMatch) {
+            targetItem = item;
+            break;
+          }
+        }
+
+        if (targetItem) {
+          console.log('[YTF] Natively hiding:', getVideoTitle(videoNode));
+          targetItem.click();
+          
+          // Give YouTube a moment to process the click before closing
+          await new Promise(resolve => setTimeout(resolve, 200));
+          break; 
+        }
+      }
+
+      // Close menu
+      document.body.click();
+
+    } catch (err) {
+      console.error('[YTF] Error during native hide:', err);
+    } finally {
+      // Restore hidden state
+      videoNode.style.setProperty('display', oldDisplay);
+      videoNode.style.setProperty('opacity', oldOpacity);
+      videoNode.style.setProperty('position', oldPosition);
+      videoNode.style.removeProperty('min-height');
+    }
+  }
 
 })(); // End of IIFE

@@ -72,9 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const manifest = chrome.runtime.getManifest();
     const versionStr = `v${manifest.version}`;
     const appVerEl = document.getElementById('app-current-version');
-    const clVerEl = document.getElementById('changelog-current-version');
     if (appVerEl) appVerEl.innerText = versionStr;
-    if (clVerEl) clVerEl.innerText = versionStr;
 
     // Tab switching
     const tabBtns = document.querySelectorAll('.tab-btn');
@@ -87,16 +85,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     tabBtns.forEach(btn => btn.onclick = () => switchTab(btn));
 
-    // Translation Engine (v4.1.1)
-    let currentTranslations = null;
-
+    // Translation Helper
     function getMsg(key) {
-        if (currentTranslations && currentTranslations[key]) return currentTranslations[key].message;
-        const msg = chrome.i18n.getMessage(key);
-        return msg || key;
+        return chrome.i18n.getMessage(key) || key;
     }
 
-    async function applyTranslations() {
+    function applyTranslations() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
             const message = getMsg(key);
@@ -115,24 +109,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (handleInput) handleInput.placeholder = getMsg('placeholderChannel') || '@ChannelHandle';
     }
 
-    async function loadLanguage(lang) {
-        if (lang === 'auto' || !lang) {
-            currentTranslations = null;
-        } else {
-            try {
-                const response = await fetch(chrome.runtime.getURL(`_locales/${lang}/messages.json`));
-                if (response.ok) currentTranslations = await response.json();
-            } catch (e) {
-                console.error('Failed to load language:', lang, e);
-                currentTranslations = null;
-            }
-        }
-        await applyTranslations();
-        if (settingsData.channelRules && settingsData.channelRules.length > 0) {
-            processAndRenderChannels(settingsData.channelRules);
-        }
-    }
-
     // Settings state
     let settingsData = {
         detoxSettings: {},
@@ -141,8 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         blockedChannels: [],
         appearance: { 
             theme: 'dark', accentColor: '#ff0000', emojiTheme: 'classic',
-            emojis: { visible: '👁️', hidden: '🙈', active: '✅', inactive: '❌' },
-            language: 'auto'
+            emojis: { visible: '👁️', hidden: '🙈', active: '✅', inactive: '❌' }
         },
         extensionEnabled: true
     };
@@ -158,19 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyAppearance() {
         const app = settingsData.appearance;
-        document.body.classList.toggle('light-theme', app.theme === 'light');
         document.documentElement.style.setProperty('--accent-color', app.accentColor);
         
-        const themeToggle = document.getElementById('theme-toggle');
-        if (themeToggle) {
-            themeToggle.innerText = app.theme === 'light' ? (app.emojis.active || '✅') : (app.emojis.inactive || '❌');
-        }
 
         if (document.getElementById('primary-color')) {
             document.getElementById('primary-color').value = app.accentColor;
             document.getElementById('hex-color').value = app.accentColor.toUpperCase();
             document.getElementById('emoji-theme-preset').value = app.emojiTheme || 'custom';
-            document.getElementById('language-selector').value = app.language || 'auto';
             document.getElementById('emoji-visible').value = app.emojis.visible;
             document.getElementById('emoji-hidden').value = app.emojis.hidden;
             document.getElementById('emoji-active').value = app.emojis.active;
@@ -182,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const emojis = settingsData.appearance.emojis;
         document.querySelectorAll('.eye-toggle').forEach(el => {
             const id = el.dataset.id;
-            if (!id || id === 'app-light-mode') return;
+            if (!id) return;
 
             let val = false;
             if (id.startsWith('side-')) {
@@ -203,12 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const map = {
                     'detox-redirect-subs': 'redirectHomeToSubs', 'detox-home-feed': 'hideHomeFeed', 'detox-sidebar': 'hideSidebar',
                     'detox-comments': 'hideComments', 'detox-shorts': 'hideShorts', 'detox-endscreen': 'hideEndscreen',
-                    'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending'
+                    'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending',
+                    'detox-sync-native-hide': 'syncNativeHide'
                 };
                 val = settingsData.detoxSettings[map[id]] || false;
             }
             
-            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs') {
+            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'detox-sync-native-hide') {
                 el.innerText = val ? (emojis.active || '✅') : (emojis.inactive || '❌');
             } else {
                 el.innerText = val ? (emojis.hidden || '🙈') : (emojis.visible || '👁️');
@@ -236,12 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.eye-toggle').forEach(el => {
         el.onclick = () => {
             const id = el.dataset.id;
-            if (id === 'app-light-mode') {
-                settingsData.appearance.theme = settingsData.appearance.theme === 'dark' ? 'light' : 'dark';
-                saveGlobalState();
-                applyAppearance();
-                return;
-            }
+            if (!id) return;
 
             if (id.startsWith('side-')) {
                 const map = {
@@ -262,7 +227,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const map = {
                     'detox-redirect-subs': 'redirectHomeToSubs', 'detox-home-feed': 'hideHomeFeed', 'detox-sidebar': 'hideSidebar',
                     'detox-comments': 'hideComments', 'detox-shorts': 'hideShorts', 'detox-endscreen': 'hideEndscreen',
-                    'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending'
+                    'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending',
+                    'detox-sync-native-hide': 'syncNativeHide'
                 };
                 const key = map[id];
                 settingsData.detoxSettings[key] = !settingsData.detoxSettings[key];
@@ -320,16 +286,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    const langSelector = document.getElementById('language-selector');
-    if (langSelector) {
-        langSelector.onchange = (e) => {
-            const lang = e.target.value;
-            settingsData.appearance.language = lang;
-            saveGlobalState();
-            loadLanguage(lang);
-        };
-    }
-
     const powerToggle = document.getElementById('extension-toggle');
     if (powerToggle) {
         powerToggle.onclick = () => {
@@ -352,11 +308,10 @@ document.addEventListener('DOMContentLoaded', () => {
             applyAppearance();
             updatePowerToggleUI();
             updateEyeVisuals();
+            applyTranslations();
 
-            loadLanguage(settingsData.appearance.language || 'auto').then(() => {
-                processAndRenderChannels(settingsData.channelRules || []);
-                processAndRenderBlockedChannels();
-            });
+            processAndRenderChannels(settingsData.channelRules || []);
+            processAndRenderBlockedChannels();
         });
     }
 
@@ -647,14 +602,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Feedback Button ─────────────────────────────────────────
-    const feedbackBtn = document.getElementById('open-feedback-form');
-    if (feedbackBtn) {
-        feedbackBtn.addEventListener('click', () => {
-            chrome.tabs.create({ url: 'https://forms.gle/ekH8ym617Pa1zcHD7' });
-        });
-    }
-
     // ── Export / Import ─────────────────────────────────────────
     //
     // EXPORT: Alle Einstellungen als JSON-Datei herunterladen.
@@ -694,16 +641,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 reader.onload = (ev) => {
                     try {
                         const data = JSON.parse(ev.target.result);
-                        // Validierung: Mindestens ein bekannter Schlüssel muss enthalten sein
+                        // Validation: At least one known key must be present
                         const valid = STORAGE_KEYS.some(k => data[k] !== undefined);
-                        if (!valid) { alert('Ungültige Backup-Datei.'); return; }
+                        if (!valid) { alert('Invalid backup file.'); return; }
                         storageSave(data, () => {
                             loadAll();
                             notifyRefresh();
-                            alert('✅ Einstellungen erfolgreich importiert!');
+                            alert('✅ Settings imported successfully!');
                         });
                     } catch (err) {
-                        alert('Fehler beim Lesen der Datei: ' + err.message);
+                        alert('Error reading file: ' + err.message);
                     }
                 };
                 reader.readAsText(file);
