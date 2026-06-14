@@ -28,22 +28,42 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "name=$NAME" >> $GITHUB_OUTPUT
           
-          # Ordnername ermitteln (z.B. SiteBlocker)
+          # Ordnername ermitteln
           REPO_NAME=$(basename $GITHUB_REPOSITORY)
           echo "repo_name=$REPO_NAME" >> $GITHUB_OUTPUT
           
           # Letzte Commits holen
           COMMITS=$(git log -n 5 --oneline)
-          # Commits fuer JSON maskieren
           COMMITS_JSON=$(echo "$COMMITS" | jq -R -s '.')
           echo "commits=$COMMITS_JSON" >> $GITHUB_OUTPUT
 
-      - name: Zip Extension
+          # Versionsnummer aus dem vorherigen Commit holen
+          PREV_VERSION=$(git show HEAD~1:manifest.json 2>/dev/null | node -e "let d=''; process.stdin.on('data',c=>d+=c).on('end',()=>{try{console.log(JSON.parse(d).version)}catch(e){console.log('0.0.0')}})" || echo "0.0.0")
+          echo "prev_version=$PREV_VERSION" >> $GITHUB_OUTPUT
+
+          echo "Current version: $VERSION"
+          echo "Previous version: $PREV_VERSION"
+
+      - name: Check if version changed
+        id: version_check
         run: |
-          # Zippe alle Dateien im Repository außer .git und .github Ordnern
+          CURRENT="${{ steps.meta.outputs.version }}"
+          PREVIOUS="${{ steps.meta.outputs.prev_version }}"
+          if [ "$CURRENT" = "$PREVIOUS" ]; then
+            echo "Version unchanged ($CURRENT). Skipping Chrome Web Store upload."
+            echo "should_deploy=false" >> $GITHUB_OUTPUT
+          else
+            echo "Version changed from $PREVIOUS to $CURRENT. Deploying."
+            echo "should_deploy=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Zip Extension
+        if: steps.version_check.outputs.should_deploy == 'true'
+        run: |
           zip -r extension.zip . -x "*.git*" "*node_modules*" "*.env*" "*extension.zip"
 
       - name: Upload and Publish to Chrome Web Store
+        if: steps.version_check.outputs.should_deploy == 'true'
         run: |
           npx chrome-webstore-upload-cli@3.2.0 upload \
             --source extension.zip \
@@ -54,8 +74,8 @@ jobs:
             --auto-publish
 
       - name: Notify Portfolio Repository
+        if: steps.version_check.outputs.should_deploy == 'true'
         run: |
-          # Sende ein Repository-Dispatch-Signal an das Portfolio-Repo, um Website und LinkedIn zu triggern
           curl -L \
             -X POST \
             -H "Accept: application/vnd.github+json" \
