@@ -256,5 +256,8 @@
                   },
     "syncNativeHide": {
                         "message":  "Native Hide Sync (Beta)"
+                    },
+    "pipOnScroll": {
+                        "message":  "Picture-in-Picture on Scroll"
                     }
 }

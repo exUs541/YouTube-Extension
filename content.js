@@ -51,6 +51,11 @@
     blockedChannels:  []
   };
 
+  // Master switch: when false, all filter/UI functions below no-op.
+  // Kept separate from `settings` because loadSettings() returns early
+  // (without touching `settings`) as soon as the extension is disabled.
+  let extensionEnabled = true;
+
   // ════════════════════════════════════════════════════════════
   // STEP 1: LOAD SETTINGS FROM BROWSER
   // ════════════════════════════════════════════════════════════
@@ -67,9 +72,11 @@
         // If the extension is disabled → undo everything and stop
         if (data.extensionEnabled === false) {
           console.log('[YouTube Filter] Extension is DISABLED. Skipping all filters.');
+          extensionEnabled = false;
           disableAll();
           return;
         }
+        extensionEnabled = true;
 
         // Copy data into settings variable (with empty defaults as fallback)
         settings.detoxSettings    = data.detoxSettings    || {};
@@ -90,6 +97,7 @@
         updateContextualUI();   // Apply classes to <body> (hide-shorts, etc.)
         filterAll();            // Filter all videos on the page
         if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
+        if (typeof initPipOnScroll === 'function') initPipOnScroll();
       }
     );
   }
@@ -132,6 +140,22 @@
 
         /* Kommentare ausblenden */
         body.hide-comments #comments { display: none !important; }
+
+        /* ── Picture-in-Picture Mode ── */
+        body.ytf-pip-active ytd-player {
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            width: 400px !important;
+            height: 225px !important;
+            min-width: unset !important;
+            min-height: unset !important;
+            z-index: 9999 !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            transform: none !important;
+        }
 
         /* ── Shorts ausblenden (mehrere Selektoren für Robustheit) ── */
         /* Shorts in der Sidebar-Navigation */
@@ -271,6 +295,7 @@
   //   → The CSS rule "body.hide-shorts ytd-...-shorts { display:none }" takes effect
   //
   function updateContextualUI() {
+    if (!extensionEnabled) return;
     const d = settings.detoxSettings;       // Abkürzung für detoxSettings
     const s = settings.sidepanelSettings;   // Abkürzung für sidepanelSettings
     const body = document.body;
@@ -331,6 +356,7 @@
   // of the sidebar if the "autoExpandSubs" setting is active.
   //
   function autoExpandSubscriptions() {
+    if (!extensionEnabled) return;
     // Search for the "Show more" button in the subscriptions section:
     const expander = document.querySelector(
       'ytd-guide-section-renderer:has(a[href="/feed/subscriptions"]) #expander-item'
@@ -396,6 +422,7 @@
   // funnel symbol (filter) to strengthen the extension's branding.
   //
   function replaceLogoIcon() {
+    if (!extensionEnabled) return;
     // Find the container that holds the paths for the red box and the triangle:
     const logoIconGroup = document.querySelector(
       'ytd-topbar-logo-renderer #logo-icon svg g g:first-child, #logo-icon svg g g:first-child'
@@ -622,9 +649,7 @@
 
     if (!text) {
       // Suche Metadaten-Spans im lockup-spezifischen Layout:
-    // Der erste span mit Text ist der Kanalname.
-    if (!text) {
-      // Suche Metadaten-Spans im lockup-spezifischen Layout:
+      // Der erste span mit sinnvollem Text ist der Kanalname.
       // Versuche erst die spezifische Row-Klasse, dann den ganzen Container:
       const metaEl =
         videoNode.querySelector('yt-content-metadata-view-model .yt-content-metadata-view-model__metadata-row') ||
@@ -831,6 +856,7 @@
   //   RULE 3 → Channel-specific rules (duration, shorts)
   //
   function processVideo(videoNode) {
+    if (!extensionEnabled) return;
     // Guard: Already blocked → do not process again
     if (!videoNode || videoNode.dataset.filtered === 'true_blocked') return;
 
@@ -851,15 +877,6 @@
       normalizeText(r.name)   === normChanName
     );
 
-    // ═══ TEMPORÄRES DEBUG-LOG ═══
-    if (chanName || chanHandle || duration) {
-      console.log(`[YTF Debug] Video: "${getVideoTitle(videoNode)}"`, 
-        `| Channel: ${chanName} (${chanHandle})`,
-        `| Duration: ${duration}s`,
-        `| Rule Found: ${rule ? 'YES' : 'NO'}`,
-        `| tag: ${videoNode.tagName}`);
-    }
-
     let shouldHide  = false; // Soll das Video versteckt werden?
     let forcedShow  = false; // Soll das Video IMMER gezeigt werden (überschreibt shouldHide)?
 
@@ -877,7 +894,6 @@
     });
 
     if (isBlocked) {
-      console.log('[YTF] ✅ BLOCKING:', chanName, chanHandle); // Debug
       shouldHide = true;
     } else {
       // Block-Button einbinden (nur wenn noch nicht blockiert):
@@ -977,6 +993,7 @@
   // Den richtigen Selektor findest du mit DevTools: Rechtsklick → Inspizieren
   //
   function filterAll() {
+    if (!extensionEnabled) return;
     const videoSelectors = [
       'ytd-rich-item-renderer',      // Startseite
       'ytd-video-renderer',          // Suchergebnisse
@@ -1063,6 +1080,11 @@
       '.ytf-block-btn, .ytf-block-channel-header, .ytf-block-channel-name-icon, .yt-filter-block-btn, .yt-filter-block-btn-header'
     ).forEach(el => el.remove());
 
+    // Remove the injected funnel icon (the style tag that hid the play
+    // triangle is already gone, so without this the funnel would float
+    // on top of the restored triangle):
+    document.querySelectorAll('.ytf-filter-logo-path').forEach(el => el.remove());
+
     // Reset logo redirect listener:
     const logo = document.querySelector('a#logo');
     if (logo) logo.dataset.intercepted = '';
@@ -1078,6 +1100,7 @@
   // 2. "🚫 Block Channel" BUTTON NEXT TO SUBSCRIBE
   //
   function processChannelPage() {
+    if (!extensionEnabled) return;
     const path = window.location.pathname;
 
     const isChannelPage = path.startsWith('/@') ||
@@ -1197,6 +1220,56 @@
 
 
   // ════════════════════════════════════════════════════════════
+  // PICTURE-IN-PICTURE (SCROLL)
+  // ════════════════════════════════════════════════════════════
+  let pipObserver = null;
+  
+  function initPipOnScroll() {
+    if (!extensionEnabled) {
+      if (pipObserver) { pipObserver.disconnect(); pipObserver = null; }
+      document.body.classList.remove('ytf-pip-active');
+      return;
+    }
+    if (pipObserver) {
+      pipObserver.disconnect();
+      pipObserver = null;
+    }
+
+    document.body.classList.remove('ytf-pip-active');
+
+    if (!settings.detoxSettings.pipOnScroll) return;
+    if (!window.location.pathname.startsWith('/watch')) return;
+
+    // Give YouTube time to render the player
+    setTimeout(() => {
+      // The main player container on YouTube (the large black box area)
+      const playerContainer = document.querySelector('#player-container-outer') || 
+                              document.querySelector('#player-full-bleed-container') || 
+                              document.querySelector('#player-container.ytd-watch-flexy');
+      const videoElement = document.querySelector('video.html5-main-video');
+      
+      if (!playerContainer || !videoElement) return;
+
+      pipObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          // If the player container scrolls out of view (less than 10% visible)
+          // we float the ytd-player
+          if (!entry.isIntersecting && !videoElement.paused) {
+            document.body.classList.add('ytf-pip-active');
+          } else if (entry.isIntersecting) {
+            document.body.classList.remove('ytf-pip-active');
+          }
+        });
+      }, {
+        threshold: 0.1
+      });
+
+      pipObserver.observe(playerContainer);
+    }, 1500);
+  }
+
+
+  // ════════════════════════════════════════════════════════════
   // MESSAGE LISTENER: Receive commands from popup
   // ════════════════════════════════════════════════════════════
   //
@@ -1216,6 +1289,7 @@
   filterAll();
   processChannelPage();
   replaceLogoIcon();
+  initPipOnScroll();
 
   // On YouTube navigation (SPA: Single Page App Navigation):
   window.addEventListener('yt-navigate-finish', () => {
@@ -1224,6 +1298,7 @@
     setTimeout(filterAll, 1000); // Wait 1s for page rendering
     processChannelPage();
     replaceLogoIcon();
+    initPipOnScroll();
   });
 
   // Backup: Filter everything again every 3 seconds.

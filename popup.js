@@ -173,12 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'detox-redirect-subs': 'redirectHomeToSubs', 'detox-home-feed': 'hideHomeFeed', 'detox-sidebar': 'hideSidebar',
                     'detox-comments': 'hideComments', 'detox-shorts': 'hideShorts', 'detox-endscreen': 'hideEndscreen',
                     'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending',
-                    'detox-sync-native-hide': 'syncNativeHide'
+                    'detox-sync-native-hide': 'syncNativeHide', 'detox-pip-scroll': 'pipOnScroll'
                 };
                 val = settingsData.detoxSettings[map[id]] || false;
             }
             
-            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'detox-sync-native-hide') {
+            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'detox-sync-native-hide' || id === 'detox-pip-scroll') {
                 el.innerText = val ? (emojis.active || '✅') : (emojis.inactive || '❌');
             } else {
                 el.innerText = val ? (emojis.hidden || '🙈') : (emojis.visible || '👁️');
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'detox-redirect-subs': 'redirectHomeToSubs', 'detox-home-feed': 'hideHomeFeed', 'detox-sidebar': 'hideSidebar',
                     'detox-comments': 'hideComments', 'detox-shorts': 'hideShorts', 'detox-endscreen': 'hideEndscreen',
                     'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending',
-                    'detox-sync-native-hide': 'syncNativeHide'
+                    'detox-sync-native-hide': 'syncNativeHide', 'detox-pip-scroll': 'pipOnScroll'
                 };
                 const key = map[id];
                 settingsData.detoxSettings[key] = !settingsData.detoxSettings[key];
