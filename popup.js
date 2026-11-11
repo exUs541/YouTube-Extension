@@ -90,6 +90,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return chrome.i18n.getMessage(key) || key;
     }
 
+    // Channel names and handles come from youtube.com, so they are never trusted as HTML.
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     function applyTranslations() {
         document.querySelectorAll('[data-i18n]').forEach(el => {
             const key = el.getAttribute('data-i18n');
@@ -153,6 +160,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = el.dataset.id;
             if (!id) return;
 
+            // These are clickable divs: make them reachable and labelled for keyboard / screen-reader users.
+            el.setAttribute('role', 'button');
+            el.tabIndex = 0;
+            const rowLabel = el.parentElement && el.parentElement.querySelector('label');
+            if (rowLabel) el.setAttribute('aria-label', rowLabel.textContent.trim());
+
             let val = false;
             if (id.startsWith('side-')) {
                 const map = {
@@ -189,6 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updatePowerToggleUI() {
         const toggle = document.getElementById('extension-toggle');
         const symbol = toggle.querySelector('.power-symbol');
+        toggle.setAttribute('aria-checked', String(!!settingsData.extensionEnabled));
         if (settingsData.extensionEnabled) {
             toggle.classList.add('active');
             symbol.innerText = 'ON';
@@ -283,6 +297,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 applyAppearance();
                 updateEyeVisuals();
             };
+        }
+    });
+
+    // Enter / Space activate the div-based controls (eye toggles and the master switch).
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.eye-toggle, .power-toggle, .card-header')) {
+            e.preventDefault();
+            e.target.click();
         }
     });
 
@@ -390,11 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const card = document.createElement('div');
             card.className = `channel-card ${expandedChannels.has(rule.handle) ? 'expanded' : ''}`;
             card.innerHTML = `
-                <div class="card-header"><div class="card-title">${rule.name || rule.handle}</div><div class="expand-icon">▼</div></div>
+                <div class="card-header" role="button" tabindex="0"><div class="card-title">${escapeHtml(rule.name || rule.handle)}</div><div class="expand-icon" aria-hidden="true">▼</div></div>
                 <div class="card-body">
                     <div class="keyword-row">
                         <label data-i18n="ruleKeywords">${getMsg('ruleKeywords')}</label>
-                        <input type="text" class="title-keywords" value="${rule.rules.titleKeywords || ''}" data-type="keywords">
+                        <input type="text" class="title-keywords" value="${escapeHtml(rule.rules.titleKeywords || '')}" data-type="keywords">
                         <div class="keyword-row-inputs">
                             <select class="title-mode" data-type="mode">
                                 <option value="hide" ${rule.rules.titleMode === 'hide' ? 'selected' : ''} data-i18n="ruleModeHide">${getMsg('ruleModeHide')}</option>
@@ -421,19 +443,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-grid" style="margin-top: 10px;">
                         <div class="grid-item">
                             <span data-i18n="labelShorts">${getMsg('labelShorts')}</span>
-                            <div class="eye-toggle rule-shorts" data-active="${rule.rules.hideShorts}">${rule.rules.hideShorts ? em.hidden : em.visible}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-shorts" data-active="${rule.rules.hideShorts}">${rule.rules.hideShorts ? em.hidden : em.visible}</div>
                         </div>
                         <div class="grid-item">
                             <span data-i18n="labelComments">${getMsg('labelComments')}</span>
-                            <div class="eye-toggle rule-comments" data-active="${rule.rules.hideComments}">${rule.rules.hideComments ? em.hidden : em.visible}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-comments" data-active="${rule.rules.hideComments}">${rule.rules.hideComments ? em.hidden : em.visible}</div>
                         </div>
                         <div class="grid-item">
                             <span data-i18n="labelEndscreen">${getMsg('labelEndscreen')}</span>
-                            <div class="eye-toggle rule-endscreen" data-active="${rule.rules.hideEndscreen}">${rule.rules.hideEndscreen ? em.hidden : em.visible}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-endscreen" data-active="${rule.rules.hideEndscreen}">${rule.rules.hideEndscreen ? em.hidden : em.visible}</div>
                         </div>
                         <div class="grid-item">
                             <span data-i18n="labelBell">${getMsg('labelBell')}</span>
-                            <div class="eye-toggle rule-bell" data-active="${rule.rules.hideNotifications}">${rule.rules.hideNotifications ? em.inactive : em.active}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-bell" data-active="${rule.rules.hideNotifications}">${rule.rules.hideNotifications ? em.inactive : em.active}</div>
                         </div>
                     </div>
                     <button class="secondary-btn danger delete-rule" style="margin-top: 10px; width: 100%;" data-i18n="btnDelete">${getMsg('btnDelete')}</button>
@@ -568,8 +590,8 @@ document.addEventListener('DOMContentLoaded', () => {
             row.className = 'blocked-item';
             row.innerHTML = `
                 <div class="blocked-item-info">
-                    <span class="blocked-item-name">🚫 ${name}</span>
-                    ${date ? `<span class="blocked-item-date">${date}</span>` : ''}
+                    <span class="blocked-item-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
+                    ${date ? `<span class="blocked-item-date">${escapeHtml(date)}</span>` : ''}
                 </div>
                 <button class="unblock-btn secondary-btn" data-i18n="unblockBtn">${getMsg('unblockBtn')}</button>
             `;
