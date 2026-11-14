@@ -95,6 +95,9 @@
     "sideAutoExpand":  {
                            "message":  "Auto-expand Subscriptions"
                        },
+    "sideShowSubCount":  {
+                             "message":  "Show Subscription Count"
+                         },
     "channelsHeader":  {
                            "message":  "Channel Based Settings"
                        },

@@ -178,9 +178,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     'side-hide-report': 'hideReportHistory',
                     'side-hide-legal': 'hideLegal',
                     'side-hide-guide': 'hideGuide',
-                    'side-auto-expand-subs': 'autoExpandSubs'
+                    'side-auto-expand-subs': 'autoExpandSubs',
+                    'side-show-sub-count': 'showSubCount'
                 };
-                val = settingsData.sidepanelSettings[map[id]] || false;
+                // showSubCount is ON by default (only an explicit `false` turns it off)
+                val = id === 'side-show-sub-count'
+                    ? settingsData.sidepanelSettings.showSubCount !== false
+                    : (settingsData.sidepanelSettings[map[id]] || false);
             } else {
                 const map = {
                     'detox-redirect-subs': 'redirectHomeToSubs', 'detox-home-feed': 'hideHomeFeed', 'detox-sidebar': 'hideSidebar',
@@ -191,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 val = settingsData.detoxSettings[map[id]] || false;
             }
             
-            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'detox-sync-native-hide' || id === 'detox-pip-scroll') {
+            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'side-show-sub-count' || id === 'detox-sync-native-hide' || id === 'detox-pip-scroll') {
                 el.innerText = val ? (emojis.active || '✅') : (emojis.inactive || '❌');
             } else {
                 el.innerText = val ? (emojis.hidden || '🙈') : (emojis.visible || '👁️');
@@ -233,10 +237,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     'side-hide-report': 'hideReportHistory',
                     'side-hide-legal': 'hideLegal',
                     'side-hide-guide': 'hideGuide',
-                    'side-auto-expand-subs': 'autoExpandSubs'
+                    'side-auto-expand-subs': 'autoExpandSubs',
+                    'side-show-sub-count': 'showSubCount'
                 };
                 const key = map[id];
-                settingsData.sidepanelSettings[key] = !settingsData.sidepanelSettings[key];
+                const current = key === 'showSubCount'
+                    ? settingsData.sidepanelSettings.showSubCount !== false   // default ON
+                    : !!settingsData.sidepanelSettings[key];
+                settingsData.sidepanelSettings[key] = !current;
             } else {
                 const map = {
                     'detox-redirect-subs': 'redirectHomeToSubs', 'detox-home-feed': 'hideHomeFeed', 'detox-sidebar': 'hideSidebar',
