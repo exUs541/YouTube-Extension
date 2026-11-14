@@ -43,6 +43,15 @@
     color: var(--yt-spec-icon-inactive, #ffffff);
 }
 
+/* Subscription counter: "Subscriptions (123)" in the sidebar section title */
+.ytf-sub-count {
+    display: inline-block;
+    margin-left: 6px;
+    font-weight: 400;
+    white-space: nowrap;
+    color: var(--yt-spec-text-secondary, #aaaaaa);
+}
+
 /* Cleanup: remove old floating overlay button styles */
 .yt-filter-block-container, .yt-filter-btn {
     display: none !important;

@@ -118,10 +118,11 @@ The **Sidepanel** tab lets you hide specific sections from YouTube's left naviga
 | **Hide Report History** | The report history link |
 | **Hide Legal Notice** | Legal links at the bottom (Terms, Privacy, etc.) |
 
-### Special Feature: Auto-Expand Subscriptions
-At the bottom of this tab (below the divider), there's a special toggle:
+### Special Features: Subscriptions
+At the bottom of this tab (below the divider), there are two special toggles:
 
 - **Auto-expand Subscriptions**: Automatically clicks the "Show more" button in the Subscriptions section, so you always see ALL your subscribed channels without manually expanding.
+- **Show Subscription Count** (on by default): Shows how many channels you are subscribed to in brackets behind the section title, e.g. **Subscriptions (123)**. The number is counted from the channel list in the sidebar and is exact even while the list is collapsed behind "Show more". Only if YouTube has not loaded the hidden channels yet, you'll briefly see a lower bound such as **(7+)** – expand the list (or enable **Auto-expand Subscriptions**) to get the exact number.
 
 ---
 

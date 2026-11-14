@@ -51,6 +51,11 @@
     blockedChannels:  []
   };
 
+  // Master switch: when false, all filter/UI functions below no-op.
+  // Kept separate from `settings` because loadSettings() returns early
+  // (without touching `settings`) as soon as the extension is disabled.
+  let extensionEnabled = true;
+
   // ════════════════════════════════════════════════════════════
   // STEP 1: LOAD SETTINGS FROM BROWSER
   // ════════════════════════════════════════════════════════════
@@ -67,9 +72,11 @@
         // If the extension is disabled → undo everything and stop
         if (data.extensionEnabled === false) {
           console.log('[YouTube Filter] Extension is DISABLED. Skipping all filters.');
+          extensionEnabled = false;
           disableAll();
           return;
         }
+        extensionEnabled = true;
 
         // Copy data into settings variable (with empty defaults as fallback)
         settings.detoxSettings    = data.detoxSettings    || {};
@@ -90,6 +97,9 @@
         updateContextualUI();   // Apply classes to <body> (hide-shorts, etc.)
         filterAll();            // Filter all videos on the page
         if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
+        settingsLoaded = true;
+        scheduleSubCount();     // Show / hide the subscription counter
+        if (typeof initPipOnScroll === 'function') initPipOnScroll();
       }
     );
   }
@@ -132,6 +142,22 @@
 
         /* Kommentare ausblenden */
         body.hide-comments #comments { display: none !important; }
+
+        /* ── Picture-in-Picture Mode ── */
+        body.ytf-pip-active ytd-player {
+            position: fixed !important;
+            bottom: 20px !important;
+            right: 20px !important;
+            width: 400px !important;
+            height: 225px !important;
+            min-width: unset !important;
+            min-height: unset !important;
+            z-index: 9999 !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            border-radius: 12px !important;
+            overflow: hidden !important;
+            transform: none !important;
+        }
 
         /* ── Shorts ausblenden (mehrere Selektoren für Robustheit) ── */
         /* Shorts in der Sidebar-Navigation */
@@ -271,6 +297,7 @@
   //   → The CSS rule "body.hide-shorts ytd-...-shorts { display:none }" takes effect
   //
   function updateContextualUI() {
+    if (!extensionEnabled) return;
     const d = settings.detoxSettings;       // Abkürzung für detoxSettings
     const s = settings.sidepanelSettings;   // Abkürzung für sidepanelSettings
     const body = document.body;
@@ -331,6 +358,7 @@
   // of the sidebar if the "autoExpandSubs" setting is active.
   //
   function autoExpandSubscriptions() {
+    if (!extensionEnabled) return;
     // Search for the "Show more" button in the subscriptions section:
     const expander = document.querySelector(
       'ytd-guide-section-renderer:has(a[href="/feed/subscriptions"]) #expander-item'
@@ -345,6 +373,121 @@
         expander.setAttribute('active-filter-expanded', 'true');
       }
     }
+  }
+
+
+  // ════════════════════════════════════════════════════════════
+  // HELPER FUNCTION: Subscription counter  →  "Subscriptions (123)"
+  // ════════════════════════════════════════════════════════════
+  //
+  // Counts the channels in the "Subscriptions" section of the sidebar
+  // and shows the number in brackets behind the section title.
+  //
+  // HOW IT COUNTS (language independent, no text parsing):
+  //   Every subscribed channel is a sidebar entry whose link points to
+  //   /@handle, /channel/UC…, /c/… or /user/…. Other entries in the same
+  //   section (e.g. "All subscriptions" → /feed/channels) are ignored.
+  //   Duplicate links are counted once.
+  //
+  // WHEN IS THE NUMBER NOT EXACT?
+  //   YouTube shows only the first few channels and hides the rest behind
+  //   "Show more". Verified: the hidden entries are already in the page
+  //   (inside #expandable-items), so the count is exact even while the list
+  //   is collapsed. As a safeguard, if a collapsible list exists but its hidden
+  //   entries are NOT in the page, we cannot know the real total, so the number
+  //   gets a "+" (e.g. "7+").
+  //
+  // SETTING: sidepanelSettings.showSubCount (default: ON, only an explicit
+  // `false` turns it off).
+  //
+  let settingsLoaded = false;
+  let subCountTimer = null;
+  const SUB_COUNT_CLASS = 'ytf-sub-count';
+  const CHANNEL_HREF_RE = /^\/(@|channel\/|c\/|user\/)/;
+
+  function countChannelLinks(root, seen) {
+    root.querySelectorAll('ytd-guide-entry-renderer a[href]').forEach(a => {
+      let path;
+      try { path = new URL(a.href).pathname; } catch (e) { return; } // a.href is always absolute
+      if (CHANNEL_HREF_RE.test(path)) seen.add(path);
+    });
+    return seen.size;
+  }
+
+  // The sidebar section whose TITLE links to /feed/subscriptions.
+  // Current YouTube layout: the title is  ytd-guide-entry-renderer#header-entry  (verified).
+  // Older layout:           a link inside  ytd-guide-section-title-renderer.
+  // (A plain "Subscriptions" entry in the main navigation also links to
+  //  /feed/subscriptions, but it is neither of these, so it is ignored.)
+  // We count inside the whole ytd-guide-section-renderer: the channels are NOT
+  // inside the same inner container as the title.
+  function findSubscriptionsTitleLinks() {
+    const links = [];
+    document.querySelectorAll('ytd-guide-section-renderer').forEach(section => {
+      const link = section.querySelector(
+        '#header-entry a[href="/feed/subscriptions"], ' +
+        'ytd-guide-section-title-renderer a[href="/feed/subscriptions"]'
+      );
+      if (link) links.push({ section, link });
+    });
+    return links;
+  }
+
+  function removeSubCount() {
+    document.querySelectorAll('.' + SUB_COUNT_CLASS).forEach(el => el.remove());
+  }
+
+  function updateSubCount() {
+    subCountTimer = null;
+    if (!settingsLoaded) return;
+    if (!extensionEnabled || settings.sidepanelSettings.showSubCount === false) {
+      removeSubCount();
+      return;
+    }
+
+    const targets = findSubscriptionsTitleLinks();
+    if (targets.length === 0) return; // Sidebar not rendered (yet)
+
+    const keep = new Set();
+    targets.forEach(({ section, link }) => {
+      const seen = new Set();
+      const total = countChannelLinks(section, seen);
+
+      // Hidden "Show more" entries missing from the page → number is only a lower bound.
+      const collapsible = section.querySelector('ytd-guide-collapsible-entry-renderer');
+      const hiddenPart  = collapsible && collapsible.querySelector('#expandable-items');
+      const partial = !!collapsible && (!hiddenPart || countChannelLinks(hiddenPart, new Set()) === 0);
+
+      if (total === 0) return; // List not loaded yet – don't show "(0)"
+
+      let numText = String(total);
+      try { numText = total.toLocaleString(document.documentElement.lang || undefined); } catch (e) { /* keep plain */ }
+      const text = '(' + numText + (partial ? '+' : '') + ')';
+
+      let badge = link.querySelector('.' + SUB_COUNT_CLASS);
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = SUB_COUNT_CLASS;
+        // Put it right behind the title text (before the ">" chevron icon).
+        // Priority list (NOT one comma selector: that would return the first match in
+        // document order, which can be a <span> inside an icon in front of the title).
+        const titleEl = ['yt-formatted-string.title', '#guide-section-title', 'yt-formatted-string', 'span']
+          .map(sel => link.querySelector(sel)).find(el => el && !el.closest('yt-icon'));
+        if (titleEl && titleEl.parentElement) titleEl.insertAdjacentElement('afterend', badge);
+        else link.appendChild(badge);
+      }
+      if (badge.textContent !== text) badge.textContent = text; // write only on change → no observer loop
+      keep.add(badge);
+    });
+
+    // Remove stale badges (e.g. left over from a re-rendered title)
+    document.querySelectorAll('.' + SUB_COUNT_CLASS).forEach(el => { if (!keep.has(el)) el.remove(); });
+  }
+
+  // Debounced: the MutationObserver fires very often while YouTube renders.
+  function scheduleSubCount() {
+    if (subCountTimer) return;
+    subCountTimer = setTimeout(updateSubCount, 300);
   }
 
 
@@ -396,6 +539,7 @@
   // funnel symbol (filter) to strengthen the extension's branding.
   //
   function replaceLogoIcon() {
+    if (!extensionEnabled) return;
     // Find the container that holds the paths for the red box and the triangle:
     const logoIconGroup = document.querySelector(
       'ytd-topbar-logo-renderer #logo-icon svg g g:first-child, #logo-icon svg g g:first-child'
@@ -622,9 +766,7 @@
 
     if (!text) {
       // Suche Metadaten-Spans im lockup-spezifischen Layout:
-    // Der erste span mit Text ist der Kanalname.
-    if (!text) {
-      // Suche Metadaten-Spans im lockup-spezifischen Layout:
+      // Der erste span mit sinnvollem Text ist der Kanalname.
       // Versuche erst die spezifische Row-Klasse, dann den ganzen Container:
       const metaEl =
         videoNode.querySelector('yt-content-metadata-view-model .yt-content-metadata-view-model__metadata-row') ||
@@ -831,6 +973,7 @@
   //   RULE 3 → Channel-specific rules (duration, shorts)
   //
   function processVideo(videoNode) {
+    if (!extensionEnabled) return;
     // Guard: Already blocked → do not process again
     if (!videoNode || videoNode.dataset.filtered === 'true_blocked') return;
 
@@ -851,15 +994,6 @@
       normalizeText(r.name)   === normChanName
     );
 
-    // ═══ TEMPORÄRES DEBUG-LOG ═══
-    if (chanName || chanHandle || duration) {
-      console.log(`[YTF Debug] Video: "${getVideoTitle(videoNode)}"`, 
-        `| Channel: ${chanName} (${chanHandle})`,
-        `| Duration: ${duration}s`,
-        `| Rule Found: ${rule ? 'YES' : 'NO'}`,
-        `| tag: ${videoNode.tagName}`);
-    }
-
     let shouldHide  = false; // Soll das Video versteckt werden?
     let forcedShow  = false; // Soll das Video IMMER gezeigt werden (überschreibt shouldHide)?
 
@@ -877,7 +1011,6 @@
     });
 
     if (isBlocked) {
-      console.log('[YTF] ✅ BLOCKING:', chanName, chanHandle); // Debug
       shouldHide = true;
     } else {
       // Block-Button einbinden (nur wenn noch nicht blockiert):
@@ -977,6 +1110,7 @@
   // Den richtigen Selektor findest du mit DevTools: Rechtsklick → Inspizieren
   //
   function filterAll() {
+    if (!extensionEnabled) return;
     const videoSelectors = [
       'ytd-rich-item-renderer',      // Startseite
       'ytd-video-renderer',          // Suchergebnisse
@@ -1002,6 +1136,7 @@
     updateContextualUI();
     replaceLogoIcon();
     if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
+    scheduleSubCount();
 
     // Go through all changes:
     for (const mutation of mutations) {
@@ -1063,6 +1198,14 @@
       '.ytf-block-btn, .ytf-block-channel-header, .ytf-block-channel-name-icon, .yt-filter-block-btn, .yt-filter-block-btn-header'
     ).forEach(el => el.remove());
 
+    // Remove the injected funnel icon (the style tag that hid the play
+    // triangle is already gone, so without this the funnel would float
+    // on top of the restored triangle):
+    document.querySelectorAll('.ytf-filter-logo-path').forEach(el => el.remove());
+
+    // Remove the subscription counter:
+    removeSubCount();
+
     // Reset logo redirect listener:
     const logo = document.querySelector('a#logo');
     if (logo) logo.dataset.intercepted = '';
@@ -1078,6 +1221,7 @@
   // 2. "🚫 Block Channel" BUTTON NEXT TO SUBSCRIBE
   //
   function processChannelPage() {
+    if (!extensionEnabled) return;
     const path = window.location.pathname;
 
     const isChannelPage = path.startsWith('/@') ||
@@ -1197,6 +1341,56 @@
 
 
   // ════════════════════════════════════════════════════════════
+  // PICTURE-IN-PICTURE (SCROLL)
+  // ════════════════════════════════════════════════════════════
+  let pipObserver = null;
+  
+  function initPipOnScroll() {
+    if (!extensionEnabled) {
+      if (pipObserver) { pipObserver.disconnect(); pipObserver = null; }
+      document.body.classList.remove('ytf-pip-active');
+      return;
+    }
+    if (pipObserver) {
+      pipObserver.disconnect();
+      pipObserver = null;
+    }
+
+    document.body.classList.remove('ytf-pip-active');
+
+    if (!settings.detoxSettings.pipOnScroll) return;
+    if (!window.location.pathname.startsWith('/watch')) return;
+
+    // Give YouTube time to render the player
+    setTimeout(() => {
+      // The main player container on YouTube (the large black box area)
+      const playerContainer = document.querySelector('#player-container-outer') || 
+                              document.querySelector('#player-full-bleed-container') || 
+                              document.querySelector('#player-container.ytd-watch-flexy');
+      const videoElement = document.querySelector('video.html5-main-video');
+      
+      if (!playerContainer || !videoElement) return;
+
+      pipObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          // If the player container scrolls out of view (less than 10% visible)
+          // we float the ytd-player
+          if (!entry.isIntersecting && !videoElement.paused) {
+            document.body.classList.add('ytf-pip-active');
+          } else if (entry.isIntersecting) {
+            document.body.classList.remove('ytf-pip-active');
+          }
+        });
+      }, {
+        threshold: 0.1
+      });
+
+      pipObserver.observe(playerContainer);
+    }, 1500);
+  }
+
+
+  // ════════════════════════════════════════════════════════════
   // MESSAGE LISTENER: Receive commands from popup
   // ════════════════════════════════════════════════════════════
   //
@@ -1216,14 +1410,17 @@
   filterAll();
   processChannelPage();
   replaceLogoIcon();
+  initPipOnScroll();
 
   // On YouTube navigation (SPA: Single Page App Navigation):
   window.addEventListener('yt-navigate-finish', () => {
     updateContextualUI();
     if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
+    scheduleSubCount();
     setTimeout(filterAll, 1000); // Wait 1s for page rendering
     processChannelPage();
     replaceLogoIcon();
+    initPipOnScroll();
   });
 
   // Backup: Filter everything again every 3 seconds.
@@ -1232,6 +1429,7 @@
     filterAll();
     processChannelPage();
     replaceLogoIcon();
+    scheduleSubCount();
   }, 3000);
 
   // ════════════════════════════════════════════════════════════

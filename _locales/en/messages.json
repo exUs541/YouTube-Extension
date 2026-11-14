@@ -95,6 +95,9 @@
     "sideAutoExpand":  {
                            "message":  "Auto-expand Subscriptions"
                        },
+    "sideShowSubCount":  {
+                             "message":  "Show Subscription Count"
+                         },
     "channelsHeader":  {
                            "message":  "Channel Based Settings"
                        },
@@ -256,5 +259,8 @@
                   },
     "syncNativeHide": {
                         "message":  "Native Hide Sync (Beta)"
+                    },
+    "pipOnScroll": {
+                        "message":  "Picture-in-Picture on Scroll"
                     }
 }
