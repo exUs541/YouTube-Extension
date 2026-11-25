@@ -105,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
                     el.placeholder = message;
                 } else if (el.tagName === 'OPTION') {
-                    if (el.parentElement && el.parentElement.id === 'emoji-theme-preset') return;
                     el.text = message;
                 } else {
                     el.innerText = message;
@@ -122,40 +121,45 @@ document.addEventListener('DOMContentLoaded', () => {
         sidepanelSettings: {},
         channelRules: [],
         blockedChannels: [],
-        appearance: { 
-            theme: 'dark', accentColor: '#ff0000', emojiTheme: 'classic',
-            emojis: { visible: '👁️', hidden: '🙈', active: '✅', inactive: '❌' }
-        },
+        appearance: { theme: 'dark', accentColor: '#ff0000' },
         extensionEnabled: true
     };
 
-    const emojiThemes = {
-        classic: { visible: '👁️', hidden: '🙈', active: '✅', inactive: '❌' },
-        privacy: { visible: '🛡️', hidden: '🚫', active: '🟢', inactive: '🔴' },
-        check: { visible: '✔️', hidden: '✖️', active: '🔘', inactive: '⚪' },
-        pulse: { visible: '🔴', hidden: '⚪', active: '🔴', inactive: '🔘' }
+    // ── Toggle icons ────────────────────────────────────────────
+    // The four states of every toggle are drawn as inline SVG icons (they follow the
+    // text colour via currentColor; popup.css colours them per state):
+    //   visible  = open eye          hidden   = crossed-out eye
+    //   active   = check mark        inactive = cross
+    const svgIcon = (shapes) =>
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+        'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + shapes + '</svg>';
+    const ICONS = {
+        visible:  svgIcon('<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'),
+        hidden:   svgIcon('<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>'),
+        active:   svgIcon('<polyline points="20 6 9 17 4 12"/>'),
+        inactive: svgIcon('<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>')
     };
+
+    // Shows one of the four icons inside a toggle element.
+    function setIcon(el, kind) {
+        if (el.dataset.icon === kind) return;
+        el.dataset.icon = kind;      // popup.css colours the icon by this value
+        el.innerHTML = ICONS[kind];  // constant, trusted markup (see ICONS above)
+    }
 
     const expandedChannels = new Set();
 
     function applyAppearance() {
         const app = settingsData.appearance;
         document.documentElement.style.setProperty('--accent-color', app.accentColor);
-        
 
         if (document.getElementById('primary-color')) {
             document.getElementById('primary-color').value = app.accentColor;
             document.getElementById('hex-color').value = app.accentColor.toUpperCase();
-            document.getElementById('emoji-theme-preset').value = app.emojiTheme || 'custom';
-            document.getElementById('emoji-visible').value = app.emojis.visible;
-            document.getElementById('emoji-hidden').value = app.emojis.hidden;
-            document.getElementById('emoji-active').value = app.emojis.active;
-            document.getElementById('emoji-inactive').value = app.emojis.inactive;
         }
     }
 
     function updateEyeVisuals() {
-        const emojis = settingsData.appearance.emojis;
         document.querySelectorAll('.eye-toggle').forEach(el => {
             const id = el.dataset.id;
             if (!id) return;
@@ -196,9 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'side-show-sub-count' || id === 'detox-sync-native-hide' || id === 'detox-pip-scroll') {
-                el.innerText = val ? (emojis.active || '✅') : (emojis.inactive || '❌');
+                setIcon(el, val ? 'active' : 'inactive');
             } else {
-                el.innerText = val ? (emojis.hidden || '🙈') : (emojis.visible || '👁️');
+                setIcon(el, val ? 'hidden' : 'visible');
             }
         });
     }
@@ -281,33 +285,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    const emojiThemeSelect = document.getElementById('emoji-theme-preset');
-    if (emojiThemeSelect) {
-        emojiThemeSelect.onchange = (e) => {
-            const val = e.target.value;
-            settingsData.appearance.emojiTheme = val;
-            if (emojiThemes[val]) {
-                settingsData.appearance.emojis = { ...emojiThemes[val] };
-            }
-            saveGlobalState();
-            applyAppearance();
-            updateEyeVisuals();
-        };
-    }
-
-    ['visible', 'hidden', 'active', 'inactive'].forEach(type => {
-        const input = document.getElementById(`emoji-${type}`);
-        if (input) {
-            input.oninput = (e) => {
-                settingsData.appearance.emojis[type] = e.target.value || settingsData.appearance.emojis[type];
-                settingsData.appearance.emojiTheme = 'custom';
-                saveGlobalState();
-                applyAppearance();
-                updateEyeVisuals();
-            };
-        }
-    });
-
     // Enter / Space activate the div-based controls (eye toggles and the master switch).
     document.addEventListener('keydown', (e) => {
         if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('.eye-toggle, .power-toggle, .card-header')) {
@@ -332,7 +309,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (data.sidepanelSettings) settingsData.sidepanelSettings = data.sidepanelSettings;
             if (data.channelRules) settingsData.channelRules = data.channelRules;
             if (data.blockedChannels) settingsData.blockedChannels = data.blockedChannels;
-            if (data.appearance) settingsData.appearance = data.appearance;
+            if (data.appearance) {
+                // Older versions also stored an emoji theme. Icons are fixed now, so drop
+                // those leftovers (and remove them from storage once).
+                const { emojis, emojiTheme, ...appearance } = data.appearance;
+                settingsData.appearance = { ...settingsData.appearance, ...appearance };
+                if (emojis !== undefined || emojiTheme !== undefined) {
+                    storageSave({ appearance: settingsData.appearance });
+                }
+            }
             if (data.extensionEnabled !== undefined) settingsData.extensionEnabled = data.extensionEnabled;
 
             applyAppearance();
@@ -411,7 +396,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const listEl = document.getElementById('channel-rules-list');
         if (!listEl) return;
         listEl.innerHTML = '';
-        const em = settingsData.appearance.emojis;
 
         if (!Array.isArray(visibleRules)) return;
 
@@ -451,19 +435,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="card-grid" style="margin-top: 10px;">
                         <div class="grid-item">
                             <span data-i18n="labelShorts">${getMsg('labelShorts')}</span>
-                            <div role="button" tabindex="0" class="eye-toggle rule-shorts" data-active="${rule.rules.hideShorts}">${rule.rules.hideShorts ? em.hidden : em.visible}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-shorts" data-active="${rule.rules.hideShorts}" data-icon="${rule.rules.hideShorts ? 'hidden' : 'visible'}">${rule.rules.hideShorts ? ICONS.hidden : ICONS.visible}</div>
                         </div>
                         <div class="grid-item">
                             <span data-i18n="labelComments">${getMsg('labelComments')}</span>
-                            <div role="button" tabindex="0" class="eye-toggle rule-comments" data-active="${rule.rules.hideComments}">${rule.rules.hideComments ? em.hidden : em.visible}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-comments" data-active="${rule.rules.hideComments}" data-icon="${rule.rules.hideComments ? 'hidden' : 'visible'}">${rule.rules.hideComments ? ICONS.hidden : ICONS.visible}</div>
                         </div>
                         <div class="grid-item">
                             <span data-i18n="labelEndscreen">${getMsg('labelEndscreen')}</span>
-                            <div role="button" tabindex="0" class="eye-toggle rule-endscreen" data-active="${rule.rules.hideEndscreen}">${rule.rules.hideEndscreen ? em.hidden : em.visible}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-endscreen" data-active="${rule.rules.hideEndscreen}" data-icon="${rule.rules.hideEndscreen ? 'hidden' : 'visible'}">${rule.rules.hideEndscreen ? ICONS.hidden : ICONS.visible}</div>
                         </div>
                         <div class="grid-item">
                             <span data-i18n="labelBell">${getMsg('labelBell')}</span>
-                            <div role="button" tabindex="0" class="eye-toggle rule-bell" data-active="${rule.rules.hideNotifications}">${rule.rules.hideNotifications ? em.inactive : em.active}</div>
+                            <div role="button" tabindex="0" class="eye-toggle rule-bell" data-active="${rule.rules.hideNotifications}" data-icon="${rule.rules.hideNotifications ? 'inactive' : 'active'}">${rule.rules.hideNotifications ? ICONS.inactive : ICONS.active}</div>
                         </div>
                     </div>
                     <button class="secondary-btn danger delete-rule" style="margin-top: 10px; width: 100%;" data-i18n="btnDelete">${getMsg('btnDelete')}</button>
@@ -479,10 +463,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newState = !(el.getAttribute('data-active') === 'true');
                 el.setAttribute('data-active', newState);
                 if (type === 'bell') {
-                    el.innerText = newState ? em.inactive : em.active;
+                    setIcon(el, newState ? 'inactive' : 'active');
                     rule.rules.hideNotifications = newState;
                 } else {
-                    el.innerText = newState ? em.hidden : em.visible;
+                    setIcon(el, newState ? 'hidden' : 'visible');
                     if (type === 'shorts') rule.rules.hideShorts = newState;
                     if (type === 'comments') rule.rules.hideComments = newState;
                     if (type === 'endscreen') rule.rules.hideEndscreen = newState;
@@ -500,10 +484,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 storageSave({ channelRules: allRules }, notifyRefresh);
             };
 
-            card.querySelector('.rule-shorts').onclick = (e) => { e.stopPropagation(); toggleRule(e.target, 'shorts'); };
-            card.querySelector('.rule-comments').onclick = (e) => { e.stopPropagation(); toggleRule(e.target, 'comments'); };
-            card.querySelector('.rule-endscreen').onclick = (e) => { e.stopPropagation(); toggleRule(e.target, 'endscreen'); };
-            card.querySelector('.rule-bell').onclick = (e) => { e.stopPropagation(); toggleRule(e.target, 'bell'); };
+            // currentTarget = the toggle itself (e.target could be the <svg> inside it)
+            card.querySelector('.rule-shorts').onclick = (e) => { e.stopPropagation(); toggleRule(e.currentTarget, 'shorts'); };
+            card.querySelector('.rule-comments').onclick = (e) => { e.stopPropagation(); toggleRule(e.currentTarget, 'comments'); };
+            card.querySelector('.rule-endscreen').onclick = (e) => { e.stopPropagation(); toggleRule(e.currentTarget, 'endscreen'); };
+            card.querySelector('.rule-bell').onclick = (e) => { e.stopPropagation(); toggleRule(e.currentTarget, 'bell'); };
             
             card.querySelectorAll('input, select').forEach(i => i.oninput = saveChannelStates);
             card.querySelector('.delete-rule').onclick = (e) => { e.stopPropagation(); allRules.splice(index, 1); storageSave({ channelRules: allRules }, loadAll); };

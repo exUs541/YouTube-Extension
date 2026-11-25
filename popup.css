@@ -15,6 +15,7 @@
     --on-accent: #ffffff;
     --danger: #b42318;
     --danger-soft: #fdecea;
+    --ok: #1a7f4b;
     --radius: 8px;
 }
 
@@ -28,6 +29,7 @@
         --muted: #9d9da8;
         --danger: #f29b92;
         --danger-soft: #3a2320;
+        --ok: #5fd38d;
     }
 }
 
@@ -153,6 +155,13 @@ html, body {
 }
 .eye-toggle:hover { background: var(--hover); border-color: var(--muted); }
 
+/* Toggle icons (inline SVG set by popup.js; they take the colour of their state) */
+.eye-toggle svg { width: 16px; height: 16px; pointer-events: none; } /* clicks always hit the toggle itself */
+.eye-toggle[data-icon="visible"]  { color: var(--muted); }   /* open eye        */
+.eye-toggle[data-icon="hidden"]   { color: var(--accent); }  /* crossed-out eye */
+.eye-toggle[data-icon="active"]   { color: var(--ok); }      /* check mark      */
+.eye-toggle[data-icon="inactive"] { color: var(--danger); }  /* cross           */
+
 .divider { border: 0; border-top: 1px solid var(--line); margin: 12px 0; }
 
 /* ── Forms ────────────────────────────────────────────── */
@@ -182,12 +191,6 @@ input[type="color"] { width: 36px; height: 30px; padding: 2px; border: 1px solid
 
 .color-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
 .color-row input[type="text"] { width: 96px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-transform: uppercase; }
-
-.emoji-editor { margin-top: 4px; }
-.emoji-editor select { width: 100%; margin-bottom: 8px; }
-.emoji-grid-compact { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.emoji-mini-group label { margin: 0 0 2px; }
-.emoji-mini-group input { width: 100%; text-align: center; font-size: 16px; }
 
 .add-channel-rule { display: flex; gap: 8px; margin-bottom: 10px; }
 .add-channel-rule input { flex: 1; min-width: 0; }
