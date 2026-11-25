@@ -1,9 +1,9 @@
 {
     "extName":  {
-                    "message":  "YouTube Channel Blocker \u0026 Video Filter"
+                    "message":  "Channel \u0026 Shorts Blocker for YouTube\u2122"
                 },
     "extDesc":  {
-                    "message":  "Block channels, hide shorts, and filter YouTube videos by keywords or duration. Stay focused and clean your feed."
+                    "message":  "Block YouTube channels, hide Shorts, and filter videos by title keyword or length. A cleaner feed with no tracking and no account."
                 },
     "tabGeneral":  {
                        "message":  "General"
@@ -150,7 +150,7 @@
                            "message":  "Appearance \u0026 Settings"
                        },
     "settingsSub":  {
-                        "message":  "Sync colors and choose your icons."
+                        "message":  "Choose your accent color and back up your settings."
                     },
     "accentColor":  {
                         "message":  "Accent Color (Hex)"
@@ -158,21 +158,6 @@
     "lightMode":  {
                       "message":  "Light Mode"
                   },
-    "emojiTheme":  {
-                       "message":  "Emoji Theme Selector"
-                   },
-    "emojiVis":  {
-                     "message":  "Vis"
-                 },
-    "emojiHid":  {
-                     "message":  "Hid"
-                 },
-    "emojiYes":  {
-                     "message":  "Yes"
-                 },
-    "emojiNo":  {
-                    "message":  "No"
-                },
     "historyTitle":  {
                          "message":  "Project History"
                      },

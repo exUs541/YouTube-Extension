@@ -1,13 +1,15 @@
-# Privacy Policy for YouTube Video Filter (Enhanced)
+# Privacy Policy for YT Filter – Channel & Shorts Blocker for YouTube™
 
-**Last Updated: April 20, 2026**
+**Last Updated: November 24, 2026**
 
-This Privacy Policy describes how the "YouTube Video Filter (Enhanced)" browser extension (the "Extension") handles user data.
+This Privacy Policy describes how the "YT Filter – Channel & Shorts Blocker for YouTube™" browser extension (the "Extension", previously published as "YouTube Channel Blocker & Video Filter") handles user data.
 
 ## 1. Data Collection and Usage
 The Extension is designed to protect your privacy. 
 - **No Personal Information:** We do not collect, store, or transmit any personally identifiable information (such as your name, email address, IP address, or browsing history).
 - **Extension Settings:** The Extension stores your filter preferences, blocked channels, and custom rules. This data is used solely to provide the filtering functionality on YouTube.
+- **Page Access:** The Extension runs only on youtube.com. It reads the page in your browser to hide videos and page elements according to your rules and to show a block button and the subscription count. Page content is not stored and is not sent anywhere.
+- **Permissions:** The `storage` permission saves your settings. Access to youtube.com is needed so the filters can run on YouTube pages. The Extension requests no other permissions.
 
 ## 2. Data Storage
 - **Local Storage:** Your settings are stored locally within your browser using the `chrome.storage.local` API.
@@ -28,3 +30,6 @@ We may update this Privacy Policy from time to time. Any changes will be reflect
 
 ## 6. Contact
 If you have any questions about this Privacy Policy, please contact us via the feedback form provided within the Extension.
+
+## 7. Trademarks
+YouTube is a trademark of Google LLC. The Extension is an independent project and is not affiliated with, endorsed by, or sponsored by Google or YouTube.
