@@ -29,7 +29,7 @@
 - **Customize the sidebar** by removing sections you don't need
 - **Set rules per channel** – filter videos by title keywords, duration, or type
 - **Block entire channels** – all their videos disappear from your feed instantly
-- **Personalize the look** with custom colors, themes, and emoji styles
+- **Personalize the look** with your own accent color
 
 Think of it as a **"Digital Detox Toolkit"** for YouTube.
 
@@ -66,7 +66,7 @@ The popup has a **sidebar navigation** on the left with 6 tabs:
 | **Sidepanel** | 📁 | Hide sections from YouTube's left navigation |
 | **Channels** | 📺 | Per-channel rules (keywords, duration, shorts) |
 | **Blocked** | 🚫 | Completely block channels – their videos disappear |
-| **Settings** | 🎨 | Colors, themes, language, emoji customization |
+| **Settings** | 🎨 | Colors, themes, language |
 | **Changelog** | 📜 | Version history and release notes |
 
 ### The Power Toggle
@@ -95,9 +95,10 @@ The **General** tab contains global toggles that affect the entire YouTube site.
 | **Hide Trending** | Removes trending/explore content from the feed. |
 
 ### How Toggles Work
-- Click the toggle icon to switch between **visible** (👁️) and **hidden** (❌)
+- Click the toggle icon to switch between **visible** (open eye) and **hidden** (crossed-out eye)
+- Toggles that simply turn a feature on or off show a **check mark** (on) or a **cross** (off)
 - Changes take effect **immediately** – no need to reload YouTube
-- The exact icons depend on your selected [Emoji Theme](#emoji-themes)
+- See [Toggle Icons](#toggle-icons) for the full list
 
 ---
 
@@ -122,7 +123,12 @@ The **Sidepanel** tab lets you hide specific sections from YouTube's left naviga
 At the bottom of this tab (below the divider), there are two special toggles:
 
 - **Auto-expand Subscriptions**: Automatically clicks the "Show more" button in the Subscriptions section, so you always see ALL your subscribed channels without manually expanding.
-- **Show Subscription Count** (on by default): Shows how many channels you are subscribed to in brackets behind the section title, e.g. **Subscriptions (123)**. The number is counted from the channel list in the sidebar and is exact even while the list is collapsed behind "Show more". Only if YouTube has not loaded the hidden channels yet, you'll briefly see a lower bound such as **(7+)** – expand the list (or enable **Auto-expand Subscriptions**) to get the exact number.
+- **Show Subscription Count** (on by default): Shows how many channels you are subscribed to in brackets behind the section title, e.g. **Subscriptions (123)**. The number is counted from the channel list in the sidebar and is exact even while the list is collapsed behind "Show more". Right after the page loads you may briefly see a lower bound such as **(7+)**.
+
+Two things happen automatically while the extension is switched on:
+
+- **"Show more" stays on the page**: The hidden channels are put into the sidebar in advance (the list stays closed), and clicking "Show more" is not allowed to open another page. "All subscriptions" still works as usual.
+- **The feed keeps loading**: When the grey placeholders at the end of a feed stay in view and nothing happens, for example after you hid many videos in your subscriptions, the extension makes YouTube load the next videos. This can take a few seconds.
 
 ---
 
@@ -248,18 +254,17 @@ Choose the display language for the extension:
 
 The language change takes effect immediately – no restart needed.
 
-### Emoji Themes
-Customize the toggle icons used throughout the extension:
+### Toggle Icons
+All toggles in the extension use the same four icons:
 
-| Theme | Visible | Hidden | Active | Inactive |
-|-------|---------|--------|--------|----------|
-| **Classic** | 👁️ | 🙈 | ✅ | ❌ |
-| **Privacy** | 🛡️ | 🚫 | 🟢 | 🔴 |
-| **Check** | ✔️ | ✖️ | 🔘 | ⚪ |
-| **Pulse** | 🔴 | ⚪ | 🔴 | 🔘 |
-| **Custom** | (your choice) | (your choice) | (your choice) | (your choice) |
+| Icon | Meaning |
+|------|---------|
+| Open eye | **Visible** – the element is shown |
+| Crossed-out eye | **Hidden** – the element is hidden |
+| Check mark | **On** – the feature is active |
+| Cross | **Off** – the feature is inactive |
 
-With **Custom**, you can type any emoji into each field to create your own theme.
+The icons are fixed and can't be customized.
 
 ---
 

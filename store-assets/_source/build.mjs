@@ -137,10 +137,11 @@ const sidebarIllustration = `
     <div class="sbar-head"><span class="t">Subscriptions</span><span class="n">(46)</span><span class="chev">›</span></div>
     ${['Example News', 'Example Gaming', 'Example Tech', 'Example Music'].map((n, i) =>
       `<div class="row"><i style="background:${['#ff8a5c', '#7c8cff', '#43c59e', '#e879c9'][i]}"></i><span>${n}</span><b></b></div>`).join('')}
+    <div class="more"><svg class="chev2" viewBox="0 0 24 24" fill="none" stroke="#9da1ae" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg><span>Show more</span></div>
     <div class="note">Simplified illustration</div>
   </div>`;
 const sidebarCss = `
-  .sbar{position:absolute;left:72px;top:490px;width:360px;padding:18px 20px 12px;border-radius:16px;background:#15161c;
+  .sbar{position:absolute;left:72px;top:474px;width:360px;padding:18px 20px 12px;border-radius:16px;background:#15161c;
         box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.1)}
   .sbar-head{display:flex;align-items:baseline;gap:8px;padding:2px 0 14px;font-size:19px;font-weight:650;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:8px}
   .sbar-head .n{font-weight:400;color:#9da1ae;position:relative}
@@ -149,6 +150,8 @@ const sidebarCss = `
   .sbar .row{display:flex;align-items:center;gap:14px;height:38px;font-size:16.5px;color:#d9dce5}
   .sbar .row i{width:26px;height:26px;border-radius:50%;flex:none}
   .sbar .row b{margin-left:auto;width:6px;height:6px;border-radius:50%;background:#4aa8ff}
+  .sbar .more{display:flex;align-items:center;gap:14px;height:38px;font-size:16.5px;color:#d9dce5}
+  .sbar .more .chev2{width:26px;height:20px;flex:none}
   .sbar .note{margin-top:8px;text-align:right;font-size:11.5px;color:#767a88}
 `;
 
@@ -161,7 +164,7 @@ const SHOTS = {
   }),
   2: () => slide('shot2', {
     headline: 'Hide Shorts and <em>other distractions</em>',
-    sub: 'Switch off what pulls you in and keep only the videos you came for.',
+    sub: 'Switch off what pulls you in. Your feed keeps loading, even after you hide many videos.',
     chips: ['Shorts', 'Comments', 'Related videos', 'End screens', 'Notification bell', 'Trending'],
     visual: popupFrame(popupPage('general', { tab: 'general' }), 1.15, 'right:72px;top:55px'),
   }),
@@ -173,7 +176,7 @@ const SHOTS = {
   }),
   4: () => slide('shot4', {
     headline: 'A cleaner sidebar, with your <em>channel count</em>',
-    sub: 'Hide the sections you never use and see how many channels you follow at a glance.',
+    sub: 'See how many channels you follow. “Show more” opens the list right there.',
     visual: sidebarIllustration + popupFrame(popupPage('sidepanel', { tab: 'sidepanel' }), 1.15, 'right:72px;top:55px'),
   }),
   5: () => slide('shot5', {

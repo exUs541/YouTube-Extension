@@ -1,6 +1,6 @@
 <p align="center"><img src="icons/icon128.png" width="96" alt="YT Filter logo"></p>
 
-<h1 align="center">YT Filter – Channel & Shorts Blocker for YouTube™</h1>
+<h1 align="center">YT Filter – Channel Blocker & Hide Shorts for YouTube™</h1>
 
 <p align="center"><b>Block YouTube channels, hide Shorts, and filter videos by title keyword or length.<br>No account, no tracking, no servers.</b></p>
 
@@ -22,6 +22,8 @@
 - **Rules per channel**: keywords, duration, comments, end screens and the notification bell for one channel, while the rest follows your global setup.
 - **Fewer distractions**: hide the home feed, related videos, comments, end screens, the notification bell and Trending.
 - **Cleaner sidebar**: hide Home, Shorts, Explore and other sections, auto-expand your subscriptions and see how many channels you follow, e.g. `Subscriptions (46)`.
+- **"Show more" stays on the page**: it opens your channel list in the sidebar instead of sending you to another page.
+- **The feed keeps loading**: if YouTube stops at grey placeholders, for example after you hid many videos, the next videos are loaded.
 - **Extras**: open the Subscriptions page instead of the home feed; a floating mini player while you scroll a video page.
 - **Private**: settings stay in your browser and sync through your browser account. Export and import as JSON. Light and dark theme.
 

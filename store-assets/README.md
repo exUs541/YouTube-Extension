@@ -38,9 +38,9 @@ store-assets/
 Screenshot order (the first counts most) and the optional captions for Edge:
 
 1. `screenshot-1-block-channels.png` – "Block any YouTube channel with one click"
-2. `screenshot-2-hide-shorts.png` – "Hide Shorts, comments, related videos and other distractions"
+2. `screenshot-2-hide-shorts.png` – "Hide Shorts and other distractions, with a feed that keeps loading"
 3. `screenshot-3-keyword-and-duration-rules.png` – "Rules per channel: title keywords and video length"
-4. `screenshot-4-sidebar-subscription-count.png` – "A cleaner sidebar that shows how many channels you follow"
+4. `screenshot-4-sidebar-subscription-count.png` – "Your channel count in the sidebar, and Show more stays on the page"
 5. `screenshot-5-private-synced-backup.png` – "No tracking. Settings sync and can be backed up. Light and dark theme"
 
 ## File naming
@@ -65,4 +65,4 @@ node store-assets/_source/make-icons.mjs       # icons/icon16/32/48/128.png and 
 ## Notes
 
 - The logo is an original mark (a funnel on a tile) and contains no YouTube shapes. Google's branding guidelines do not allow Google marks or altered marks as a logo.
-- The texts describe only features that exist in the code. The subscription counter was checked live on 2026-11-14; a live test of all other features against the current YouTube layout is still open.
+- The texts describe only features that exist in the code. Checked live on 2026-11-26: subscription counter, "Show more" and the feed reload. A live test of all other features against the current YouTube layout is still open.
