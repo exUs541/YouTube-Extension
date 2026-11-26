@@ -1,9 +1,9 @@
 {
     "extName":  {
-                    "message":  "Channel \u0026 Shorts Blocker for YouTube\u2122"
+                    "message":  "YT Filter \u2013 Channel Blocker \u0026 Hide Shorts for YouTube\u2122"
                 },
     "extDesc":  {
-                    "message":  "Block YouTube channels, hide Shorts, and filter videos by title keyword or length. A cleaner feed with no tracking and no account."
+                    "message":  "Block channels, hide Shorts and comments, filter videos by keyword or length. A calmer YouTube with no account and no tracking."
                 },
     "tabGeneral":  {
                        "message":  "General"

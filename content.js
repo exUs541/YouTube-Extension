@@ -487,7 +487,179 @@
   // Debounced: the MutationObserver fires very often while YouTube renders.
   function scheduleSubCount() {
     if (subCountTimer) return;
-    subCountTimer = setTimeout(updateSubCount, 300);
+    subCountTimer = setTimeout(() => {
+      primeSubscriptionList();
+      updateSubCount();
+    }, 300);
+  }
+
+
+  // ════════════════════════════════════════════════════════════
+  // HELPER FUNCTIONS: Keep "Show more" (subscriptions) on the page
+  // ════════════════════════════════════════════════════════════
+  //
+  // YouTube adds the hidden channels to the page only when "Show more" is used
+  // for the first time, and that click sometimes opens /feed/channels instead.
+  //
+  // 1. primeSubscriptionList() opens the list once and closes it again in the
+  //    same moment, so nothing visibly changes. Afterwards "Show more" only has
+  //    to unfold channels that are already there, and the counter is exact.
+  // 2. Click guard: right after a click on "Show more" the page may not
+  //    navigate away.
+  //
+  const SHOW_MORE_SEL = 'ytd-guide-collapsible-entry-renderer #expander-item';
+  const SHOW_MORE_GUARD_MS = 1500;
+  let showMoreClickedAt = 0;
+  let primingNow = false;
+
+  function primeSubscriptionList() {
+    if (!settingsLoaded || !extensionEnabled) return;
+    if (settings.sidepanelSettings.autoExpandSubs) return; // the list gets opened anyway
+
+    findSubscriptionsTitleLinks().forEach(({ section }) => {
+      const list      = section.querySelector('ytd-guide-collapsible-entry-renderer');
+      const expander  = list && list.querySelector('#expander-item');
+      const collapser = list && list.querySelector('#collapser-item');
+      if (!expander || !collapser) return;
+
+      if (list.querySelector('#expandable-items ytd-guide-entry-renderer')) {
+        delete list.dataset.ytfPrimeTries; // done; allow it again if YouTube rebuilds the list
+        return;
+      }
+
+      // At most 3 attempts, 2 seconds apart (YouTube may not be ready yet):
+      const tries = Number(list.dataset.ytfPrimeTries || 0);
+      if (tries >= 3 || Date.now() - Number(list.dataset.ytfPrimeAt || 0) < 2000) return;
+      list.dataset.ytfPrimeTries = String(tries + 1);
+      list.dataset.ytfPrimeAt = String(Date.now());
+
+      keepFocus(list, document.activeElement);
+      primingNow = true;
+      try {
+        expander.click();
+        collapser.click();
+      } finally {
+        primingNow = false;
+      }
+    });
+  }
+
+  // YouTube moves the keyboard focus into the list a moment after it was closed
+  // (visible as a frame around "Show more"). Give the focus back, unless the
+  // user has started clicking or typing in the meantime.
+  function keepFocus(list, focusedBefore) {
+    function stop() {
+      list.removeEventListener('focusin', giveBack, true);
+      window.removeEventListener('pointerdown', stop, true);
+      window.removeEventListener('keydown', stop, true);
+    }
+    function giveBack(e) {
+      stop();
+      e.target.blur();
+      if (focusedBefore && focusedBefore !== document.body && focusedBefore.isConnected) {
+        focusedBefore.focus({ preventScroll: true });
+      }
+    }
+    list.addEventListener('focusin', giveBack, true);
+    window.addEventListener('pointerdown', stop, true);
+    window.addEventListener('keydown', stop, true);
+    setTimeout(stop, 5000);
+  }
+
+  function isSubscriptionsShowMore(node) {
+    const expander = node && node.closest && node.closest(SHOW_MORE_SEL);
+    if (!expander) return false;
+    const section = expander.closest('ytd-guide-section-renderer');
+    return findSubscriptionsTitleLinks().some(target => target.section === section);
+  }
+
+  // Remember whether the last real click was on "Show more":
+  window.addEventListener('click', e => {
+    if (!e.isTrusted) return;
+    const onShowMore = extensionEnabled && isSubscriptionsShowMore(e.composedPath()[0]);
+    showMoreClickedAt = onShowMore ? Date.now() : 0;
+  }, true);
+
+  function showMoreGuardActive() {
+    return primingNow || Date.now() - showMoreClickedAt < SHOW_MORE_GUARD_MS;
+  }
+
+  // YouTube's in-page navigation starts with this event:
+  window.addEventListener('yt-navigate', e => {
+    if (showMoreGuardActive()) e.stopImmediatePropagation();
+  }, true);
+
+  // Plain link or address change (Navigation API of Chrome and Edge):
+  if (window.navigation) {
+    window.navigation.addEventListener('navigate', e => {
+      if (showMoreGuardActive() && e.cancelable &&
+          new URL(e.destination.url).pathname === '/feed/channels') {
+        e.preventDefault();
+      }
+    });
+  }
+
+
+  // ════════════════════════════════════════════════════════════
+  // HELPER FUNCTION: Restart a feed that stops loading
+  // ════════════════════════════════════════════════════════════
+  //
+  // YouTube loads the next videos when the placeholder at the end of a feed
+  // (ytd-continuation-item-renderer) comes into view. If videos are hidden and
+  // the placeholder simply stays in view, YouTube does not notice, and only
+  // grey boxes remain. Moving it out of view for a moment makes it "arrive"
+  // again, and YouTube loads the next videos.
+  //
+  const FEED_STUCK_MS    = 2500;  // in view this long without a change = stuck
+  const FEED_MAX_WAIT_MS = 10000; // longest pause between two attempts
+  const FEED_MAX_NUDGES  = 15;    // then give up (end of feed or YouTube error)
+  const feedWatch = new WeakMap();
+
+  function nudgeStuckFeed() {
+    if (!extensionEnabled || document.visibilityState !== 'visible') return;
+
+    document.querySelectorAll('ytd-browse:not([hidden]) ytd-continuation-item-renderer').forEach(el => {
+      if (el.style.transform) return; // being moved right now
+
+      const box = el.getBoundingClientRect();
+      if (box.height === 0 || box.top >= window.innerHeight || box.bottom <= 0) {
+        feedWatch.delete(el);
+        return;
+      }
+
+      // The number of neighbours changes when videos arrive or are removed.
+      const neighbours = el.parentElement ? el.parentElement.childElementCount : 0;
+      const state = feedWatch.get(el);
+      if (!state || state.neighbours !== neighbours) {
+        feedWatch.set(el, { neighbours, nudges: 0, since: Date.now() });
+        return;
+      }
+
+      const pause = Math.min(FEED_STUCK_MS * (state.nudges + 1), FEED_MAX_WAIT_MS);
+      if (state.nudges >= FEED_MAX_NUDGES || Date.now() - state.since < pause) return;
+      state.nudges++;
+      state.since = Date.now();
+      moveOutAndBack(el);
+    });
+  }
+
+  // Moves the placeholder out of view and brings it back as soon as the browser
+  // has noticed. A fixed short pause is not enough when the window draws slowly.
+  function moveOutAndBack(el) {
+    let timer = setTimeout(back, 3000); // in any case
+    const watcher = new IntersectionObserver(entries => {
+      if (entries.some(entry => !entry.isIntersecting)) {
+        clearTimeout(timer);
+        timer = setTimeout(back, 150);
+      }
+    });
+    function back() {
+      clearTimeout(timer);
+      watcher.disconnect();
+      el.style.transform = '';
+    }
+    el.style.transform = 'translateY(300vh)';
+    watcher.observe(el);
   }
 
 
@@ -1431,6 +1603,9 @@
     replaceLogoIcon();
     scheduleSubCount();
   }, 3000);
+
+  // Restart the feed if YouTube stops loading more videos:
+  setInterval(nudgeStuckFeed, 1000);
 
   // ════════════════════════════════════════════════════════════
   // INTERNAL HIDE QUEUE: Process one hide action at a time
