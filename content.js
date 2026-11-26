@@ -99,7 +99,7 @@
         if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
         settingsLoaded = true;
         scheduleSubCount();     // Show / hide the subscription counter
-        if (typeof initPipOnScroll === 'function') initPipOnScroll();
+        updatePip();
       }
     );
   }
@@ -1515,50 +1515,33 @@
   // ════════════════════════════════════════════════════════════
   // PICTURE-IN-PICTURE (SCROLL)
   // ════════════════════════════════════════════════════════════
-  let pipObserver = null;
-  
-  function initPipOnScroll() {
-    if (!extensionEnabled) {
-      if (pipObserver) { pipObserver.disconnect(); pipObserver = null; }
-      document.body.classList.remove('ytf-pip-active');
-      return;
+  //
+  // Floats the player in the corner while its place on the watch page is
+  // scrolled out of view. That place is #player-container: YouTube moves it
+  // between the normal column and the full-width area (theater mode,
+  // fullscreen), so no other element can be used to tell where the player is.
+  // In fullscreen the player never floats.
+  function updatePip() {
+    const floating = document.body.classList.contains('ytf-pip-active');
+    let float = false;
+
+    if (extensionEnabled && settings.detoxSettings.pipOnScroll &&
+        window.location.pathname.startsWith('/watch') && !document.fullscreenElement) {
+      const place = document.querySelector('#player-container.ytd-watch-flexy');
+      const video = document.querySelector('ytd-watch-flexy video.html5-main-video');
+      if (place && video) {
+        const box = place.getBoundingClientRect();
+        const inView = Math.min(box.bottom, window.innerHeight) - Math.max(box.top, 0);
+        // Less than 10% in view. A paused video does not start floating,
+        // but one that floats already stays where it is.
+        float = box.height > 0 && inView < box.height * 0.1 && (floating || !video.paused);
+      }
     }
-    if (pipObserver) {
-      pipObserver.disconnect();
-      pipObserver = null;
-    }
 
-    document.body.classList.remove('ytf-pip-active');
-
-    if (!settings.detoxSettings.pipOnScroll) return;
-    if (!window.location.pathname.startsWith('/watch')) return;
-
-    // Give YouTube time to render the player
-    setTimeout(() => {
-      // The main player container on YouTube (the large black box area)
-      const playerContainer = document.querySelector('#player-container-outer') || 
-                              document.querySelector('#player-full-bleed-container') || 
-                              document.querySelector('#player-container.ytd-watch-flexy');
-      const videoElement = document.querySelector('video.html5-main-video');
-      
-      if (!playerContainer || !videoElement) return;
-
-      pipObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          // If the player container scrolls out of view (less than 10% visible)
-          // we float the ytd-player
-          if (!entry.isIntersecting && !videoElement.paused) {
-            document.body.classList.add('ytf-pip-active');
-          } else if (entry.isIntersecting) {
-            document.body.classList.remove('ytf-pip-active');
-          }
-        });
-      }, {
-        threshold: 0.1
-      });
-
-      pipObserver.observe(playerContainer);
-    }, 1500);
+    if (float === floating) return;
+    document.body.classList.toggle('ytf-pip-active', float);
+    // The player fits its picture to the new size only after a resize event.
+    window.dispatchEvent(new Event('resize'));
   }
 
 
@@ -1582,7 +1565,12 @@
   filterAll();
   processChannelPage();
   replaceLogoIcon();
-  initPipOnScroll();
+
+  // Mini player: react at once to scrolling and fullscreen; the timer covers
+  // everything else (theater mode, navigation, play and pause).
+  window.addEventListener('scroll', updatePip, { passive: true });
+  document.addEventListener('fullscreenchange', updatePip);
+  setInterval(updatePip, 500);
 
   // On YouTube navigation (SPA: Single Page App Navigation):
   window.addEventListener('yt-navigate-finish', () => {
@@ -1592,7 +1580,7 @@
     setTimeout(filterAll, 1000); // Wait 1s for page rendering
     processChannelPage();
     replaceLogoIcon();
-    initPipOnScroll();
+    updatePip();
   });
 
   // Backup: Filter everything again every 3 seconds.
