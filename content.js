@@ -99,7 +99,7 @@
         if (settings.sidepanelSettings.autoExpandSubs) autoExpandSubscriptions();
         settingsLoaded = true;
         scheduleSubCount();     // Show / hide the subscription counter
-        if (typeof initPipOnScroll === 'function') initPipOnScroll();
+        updatePip();
       }
     );
   }
@@ -487,7 +487,179 @@
   // Debounced: the MutationObserver fires very often while YouTube renders.
   function scheduleSubCount() {
     if (subCountTimer) return;
-    subCountTimer = setTimeout(updateSubCount, 300);
+    subCountTimer = setTimeout(() => {
+      primeSubscriptionList();
+      updateSubCount();
+    }, 300);
+  }
+
+
+  // ════════════════════════════════════════════════════════════
+  // HELPER FUNCTIONS: Keep "Show more" (subscriptions) on the page
+  // ════════════════════════════════════════════════════════════
+  //
+  // YouTube adds the hidden channels to the page only when "Show more" is used
+  // for the first time, and that click sometimes opens /feed/channels instead.
+  //
+  // 1. primeSubscriptionList() opens the list once and closes it again in the
+  //    same moment, so nothing visibly changes. Afterwards "Show more" only has
+  //    to unfold channels that are already there, and the counter is exact.
+  // 2. Click guard: right after a click on "Show more" the page may not
+  //    navigate away.
+  //
+  const SHOW_MORE_SEL = 'ytd-guide-collapsible-entry-renderer #expander-item';
+  const SHOW_MORE_GUARD_MS = 1500;
+  let showMoreClickedAt = 0;
+  let primingNow = false;
+
+  function primeSubscriptionList() {
+    if (!settingsLoaded || !extensionEnabled) return;
+    if (settings.sidepanelSettings.autoExpandSubs) return; // the list gets opened anyway
+
+    findSubscriptionsTitleLinks().forEach(({ section }) => {
+      const list      = section.querySelector('ytd-guide-collapsible-entry-renderer');
+      const expander  = list && list.querySelector('#expander-item');
+      const collapser = list && list.querySelector('#collapser-item');
+      if (!expander || !collapser) return;
+
+      if (list.querySelector('#expandable-items ytd-guide-entry-renderer')) {
+        delete list.dataset.ytfPrimeTries; // done; allow it again if YouTube rebuilds the list
+        return;
+      }
+
+      // At most 3 attempts, 2 seconds apart (YouTube may not be ready yet):
+      const tries = Number(list.dataset.ytfPrimeTries || 0);
+      if (tries >= 3 || Date.now() - Number(list.dataset.ytfPrimeAt || 0) < 2000) return;
+      list.dataset.ytfPrimeTries = String(tries + 1);
+      list.dataset.ytfPrimeAt = String(Date.now());
+
+      keepFocus(list, document.activeElement);
+      primingNow = true;
+      try {
+        expander.click();
+        collapser.click();
+      } finally {
+        primingNow = false;
+      }
+    });
+  }
+
+  // YouTube moves the keyboard focus into the list a moment after it was closed
+  // (visible as a frame around "Show more"). Give the focus back, unless the
+  // user has started clicking or typing in the meantime.
+  function keepFocus(list, focusedBefore) {
+    function stop() {
+      list.removeEventListener('focusin', giveBack, true);
+      window.removeEventListener('pointerdown', stop, true);
+      window.removeEventListener('keydown', stop, true);
+    }
+    function giveBack(e) {
+      stop();
+      e.target.blur();
+      if (focusedBefore && focusedBefore !== document.body && focusedBefore.isConnected) {
+        focusedBefore.focus({ preventScroll: true });
+      }
+    }
+    list.addEventListener('focusin', giveBack, true);
+    window.addEventListener('pointerdown', stop, true);
+    window.addEventListener('keydown', stop, true);
+    setTimeout(stop, 5000);
+  }
+
+  function isSubscriptionsShowMore(node) {
+    const expander = node && node.closest && node.closest(SHOW_MORE_SEL);
+    if (!expander) return false;
+    const section = expander.closest('ytd-guide-section-renderer');
+    return findSubscriptionsTitleLinks().some(target => target.section === section);
+  }
+
+  // Remember whether the last real click was on "Show more":
+  window.addEventListener('click', e => {
+    if (!e.isTrusted) return;
+    const onShowMore = extensionEnabled && isSubscriptionsShowMore(e.composedPath()[0]);
+    showMoreClickedAt = onShowMore ? Date.now() : 0;
+  }, true);
+
+  function showMoreGuardActive() {
+    return primingNow || Date.now() - showMoreClickedAt < SHOW_MORE_GUARD_MS;
+  }
+
+  // YouTube's in-page navigation starts with this event:
+  window.addEventListener('yt-navigate', e => {
+    if (showMoreGuardActive()) e.stopImmediatePropagation();
+  }, true);
+
+  // Plain link or address change (Navigation API of Chrome and Edge):
+  if (window.navigation) {
+    window.navigation.addEventListener('navigate', e => {
+      if (showMoreGuardActive() && e.cancelable &&
+          new URL(e.destination.url).pathname === '/feed/channels') {
+        e.preventDefault();
+      }
+    });
+  }
+
+
+  // ════════════════════════════════════════════════════════════
+  // HELPER FUNCTION: Restart a feed that stops loading
+  // ════════════════════════════════════════════════════════════
+  //
+  // YouTube loads the next videos when the placeholder at the end of a feed
+  // (ytd-continuation-item-renderer) comes into view. If videos are hidden and
+  // the placeholder simply stays in view, YouTube does not notice, and only
+  // grey boxes remain. Moving it out of view for a moment makes it "arrive"
+  // again, and YouTube loads the next videos.
+  //
+  const FEED_STUCK_MS    = 2500;  // in view this long without a change = stuck
+  const FEED_MAX_WAIT_MS = 10000; // longest pause between two attempts
+  const FEED_MAX_NUDGES  = 15;    // then give up (end of feed or YouTube error)
+  const feedWatch = new WeakMap();
+
+  function nudgeStuckFeed() {
+    if (!extensionEnabled || document.visibilityState !== 'visible') return;
+
+    document.querySelectorAll('ytd-browse:not([hidden]) ytd-continuation-item-renderer').forEach(el => {
+      if (el.style.transform) return; // being moved right now
+
+      const box = el.getBoundingClientRect();
+      if (box.height === 0 || box.top >= window.innerHeight || box.bottom <= 0) {
+        feedWatch.delete(el);
+        return;
+      }
+
+      // The number of neighbours changes when videos arrive or are removed.
+      const neighbours = el.parentElement ? el.parentElement.childElementCount : 0;
+      const state = feedWatch.get(el);
+      if (!state || state.neighbours !== neighbours) {
+        feedWatch.set(el, { neighbours, nudges: 0, since: Date.now() });
+        return;
+      }
+
+      const pause = Math.min(FEED_STUCK_MS * (state.nudges + 1), FEED_MAX_WAIT_MS);
+      if (state.nudges >= FEED_MAX_NUDGES || Date.now() - state.since < pause) return;
+      state.nudges++;
+      state.since = Date.now();
+      moveOutAndBack(el);
+    });
+  }
+
+  // Moves the placeholder out of view and brings it back as soon as the browser
+  // has noticed. A fixed short pause is not enough when the window draws slowly.
+  function moveOutAndBack(el) {
+    let timer = setTimeout(back, 3000); // in any case
+    const watcher = new IntersectionObserver(entries => {
+      if (entries.some(entry => !entry.isIntersecting)) {
+        clearTimeout(timer);
+        timer = setTimeout(back, 150);
+      }
+    });
+    function back() {
+      clearTimeout(timer);
+      watcher.disconnect();
+      el.style.transform = '';
+    }
+    el.style.transform = 'translateY(300vh)';
+    watcher.observe(el);
   }
 
 
@@ -522,7 +694,7 @@
 
     if (authorLink) {
       text = text || authorLink.textContent.trim();
-      const href   = authorLink.getAttribute('href');
+      const href   = authorLink.getAttribute('href') || '';   // can be a name without link
       const hMatch = href.match(/@([^/?#]+)/);
       handle = handle || (hMatch ? '@' + hMatch[1] : href);
     }
@@ -738,9 +910,17 @@
     );
     if (classicLink && classicLink.textContent.trim()) {
       text   = classicLink.textContent.trim();
-      const href = classicLink.getAttribute('href');
+      let href = classicLink.getAttribute('href');
+      // Videos by several channels ("A and 2 more") show the names without a
+      // link. The channel picture still leads to the first of them: use it.
+      const isShared = !href;
+      if (isShared) {
+        href = videoNode.querySelector('a#channel-thumbnail[href]')?.getAttribute('href') || '';
+      }
       const m    = href.match(/@([^/?#]+)/);
       handle = m ? '@' + m[1] : href;
+      // "A and 2 more" is not a channel name, so show and store the handle instead.
+      if (isShared && m) text = handle;
       elFound = classicLink;
     }
 
@@ -860,6 +1040,14 @@
   }
 
 
+  // Identifies what a card shows right now ('' if it has no video link). YouTube
+  // reuses card elements for other videos, e.g. on a new search.
+  function getCardKey(videoNode, chanName, chanHandle) {
+    const link = videoNode.querySelector('a[href^="/watch"], a[href^="/shorts/"]')?.getAttribute('href');
+    return link ? `${link} ${chanHandle || chanName}` : '';
+  }
+
+
   // ════════════════════════════════════════════════════════════
   // 🚫 INSERT BLOCK BUTTON NEXT TO CHANNEL NAME
   // ════════════════════════════════════════════════════════════
@@ -872,10 +1060,7 @@
   // The button is inserted directly next to it (insertAdjacentElement).
   //
   function injectBlockButton(videoNode, chanName, chanHandle, chanElement) {
-    // Guard 1: Button already inserted? → do nothing
-    if (videoNode.querySelector('.ytf-block-btn')) return;
-
-    // Guard 2: No channel name known? → cancel (will be retried in the next interval)
+    // Guard: No channel name known? → cancel (will be retried in the next interval)
     if (!chanHandle && !chanName) return;
 
     // ── Find the channel element (where the button will be inserted) ────
@@ -915,17 +1100,38 @@
     // No channel name element found → cancel
     if (!targetEl) return;
 
-    // ── Create button ───────────────────────────────────
+    // ── Insert the button(s) ────────────────────────────
+    const addAfter = el => {
+      if (el && !el.parentElement.querySelector(':scope > .ytf-block-btn')) {
+        el.insertAdjacentElement('afterend', createBlockButton(videoNode));
+      }
+    };
+    if (!videoNode.querySelector('.ytf-block-btn')) addAfter(targetEl);
+    // Search results hold the channel name in several places and show only one of
+    // them, depending on the page layout (a link, or a plain text for videos by
+    // several channels). Each place gets its own button.
+    if (videoNode.matches('ytd-video-renderer')) {
+      videoNode.querySelectorAll('ytd-channel-name a, #attributed-channel-name > yt-text-view-model').forEach(addAfter);
+    }
+
+    // YouTube reuses cards for other videos: keep the tooltip up to date.
+    const title = `Block "${chanName || chanHandle}" — Hide all videos from this channel`;
+    videoNode.querySelectorAll('.ytf-block-btn').forEach(btn => { btn.title = title; });
+  }
+
+  function createBlockButton(videoNode) {
     const btn = document.createElement('button');
     btn.className = 'ytf-block-btn';
     btn.textContent = '🚫';
-    btn.title = `Block "${chanName || chanHandle}" — Hide all videos from this channel`;
 
     // Click-Handler: Kanal blockieren
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
 
+      // Read the card now: it may show another video than when the button was added.
+      const { text: chanName, handle: chanHandle } = getChannelInfo(videoNode);
+      if (!chanName && !chanHandle) return;
       const handle = chanHandle || chanName;
       const name   = chanName   || chanHandle;
 
@@ -943,19 +1149,12 @@
           chrome.storage.sync.set({ blockedChannels: list }, () => {
             videoNode.style.display = 'none';
             videoNode.dataset.filtered = 'true_blocked';
+            videoNode.dataset.ytfVideo = getCardKey(videoNode, chanName, chanHandle);
           });
         }
       });
     });
-
-    // ── Button direkt neben dem Kanalnamen einfügen ──────────
-    // insertAdjacentElement('afterend', btn) = direkt NACH dem Element
-    try {
-      targetEl.insertAdjacentElement('afterend', btn);
-    } catch (err) {
-      // Fallback: Als Kind des Eltern-Elements anfügen
-      if (targetEl.parentElement) targetEl.parentElement.appendChild(btn);
-    }
+    return btn;
   }
 
 
@@ -974,11 +1173,18 @@
   //
   function processVideo(videoNode) {
     if (!extensionEnabled) return;
-    // Guard: Already blocked → do not process again
-    if (!videoNode || videoNode.dataset.filtered === 'true_blocked') return;
+    if (!videoNode) return;
 
     // Read channel information from the video card:
     const { text: chanName, handle: chanHandle, elFound: chanElement } = getChannelInfo(videoNode);
+
+    // Guard: Already blocked → do not process again, as long as the card still
+    // shows the same video. A reused card is checked afresh.
+    const cardKey = getCardKey(videoNode, chanName, chanHandle);
+    if (videoNode.dataset.filtered === 'true_blocked') {
+      if (!cardKey || videoNode.dataset.ytfVideo === cardKey) return;
+      delete videoNode.dataset.nativelyHidden;
+    }
 
     // Video information:
     const duration       = parseDuration(getDurationText(videoNode));
@@ -1076,6 +1282,7 @@
       videoNode.style.display = 'none';
       videoNode.setAttribute('hidden', 'true');
       videoNode.dataset.filtered = 'true_blocked';
+      videoNode.dataset.ytfVideo = cardKey;
 
       // NEW: Trigger YouTube's internal hide function if enabled (using a queue)
       if (settings.detoxSettings.syncNativeHide && !videoNode.dataset.nativelyHidden) {
@@ -1343,50 +1550,33 @@
   // ════════════════════════════════════════════════════════════
   // PICTURE-IN-PICTURE (SCROLL)
   // ════════════════════════════════════════════════════════════
-  let pipObserver = null;
-  
-  function initPipOnScroll() {
-    if (!extensionEnabled) {
-      if (pipObserver) { pipObserver.disconnect(); pipObserver = null; }
-      document.body.classList.remove('ytf-pip-active');
-      return;
+  //
+  // Floats the player in the corner while its place on the watch page is
+  // scrolled out of view. That place is #player-container: YouTube moves it
+  // between the normal column and the full-width area (theater mode,
+  // fullscreen), so no other element can be used to tell where the player is.
+  // In fullscreen the player never floats.
+  function updatePip() {
+    const floating = document.body.classList.contains('ytf-pip-active');
+    let float = false;
+
+    if (extensionEnabled && settings.detoxSettings.pipOnScroll &&
+        window.location.pathname.startsWith('/watch') && !document.fullscreenElement) {
+      const place = document.querySelector('#player-container.ytd-watch-flexy');
+      const video = document.querySelector('ytd-watch-flexy video.html5-main-video');
+      if (place && video) {
+        const box = place.getBoundingClientRect();
+        const inView = Math.min(box.bottom, window.innerHeight) - Math.max(box.top, 0);
+        // Less than 10% in view. A paused video does not start floating,
+        // but one that floats already stays where it is.
+        float = box.height > 0 && inView < box.height * 0.1 && (floating || !video.paused);
+      }
     }
-    if (pipObserver) {
-      pipObserver.disconnect();
-      pipObserver = null;
-    }
 
-    document.body.classList.remove('ytf-pip-active');
-
-    if (!settings.detoxSettings.pipOnScroll) return;
-    if (!window.location.pathname.startsWith('/watch')) return;
-
-    // Give YouTube time to render the player
-    setTimeout(() => {
-      // The main player container on YouTube (the large black box area)
-      const playerContainer = document.querySelector('#player-container-outer') || 
-                              document.querySelector('#player-full-bleed-container') || 
-                              document.querySelector('#player-container.ytd-watch-flexy');
-      const videoElement = document.querySelector('video.html5-main-video');
-      
-      if (!playerContainer || !videoElement) return;
-
-      pipObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          // If the player container scrolls out of view (less than 10% visible)
-          // we float the ytd-player
-          if (!entry.isIntersecting && !videoElement.paused) {
-            document.body.classList.add('ytf-pip-active');
-          } else if (entry.isIntersecting) {
-            document.body.classList.remove('ytf-pip-active');
-          }
-        });
-      }, {
-        threshold: 0.1
-      });
-
-      pipObserver.observe(playerContainer);
-    }, 1500);
+    if (float === floating) return;
+    document.body.classList.toggle('ytf-pip-active', float);
+    // The player fits its picture to the new size only after a resize event.
+    window.dispatchEvent(new Event('resize'));
   }
 
 
@@ -1410,7 +1600,12 @@
   filterAll();
   processChannelPage();
   replaceLogoIcon();
-  initPipOnScroll();
+
+  // Mini player: react at once to scrolling and fullscreen; the timer covers
+  // everything else (theater mode, navigation, play and pause).
+  window.addEventListener('scroll', updatePip, { passive: true });
+  document.addEventListener('fullscreenchange', updatePip);
+  setInterval(updatePip, 500);
 
   // On YouTube navigation (SPA: Single Page App Navigation):
   window.addEventListener('yt-navigate-finish', () => {
@@ -1420,7 +1615,7 @@
     setTimeout(filterAll, 1000); // Wait 1s for page rendering
     processChannelPage();
     replaceLogoIcon();
-    initPipOnScroll();
+    updatePip();
   });
 
   // Backup: Filter everything again every 3 seconds.
@@ -1431,6 +1626,9 @@
     replaceLogoIcon();
     scheduleSubCount();
   }, 3000);
+
+  // Restart the feed if YouTube stops loading more videos:
+  setInterval(nudgeStuckFeed, 1000);
 
   // ════════════════════════════════════════════════════════════
   // INTERNAL HIDE QUEUE: Process one hide action at a time
