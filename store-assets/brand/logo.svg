@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="YT Filter logo">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#FF5A5F"/>
+      <stop offset="1" stop-color="#D01F4A"/>
+    </linearGradient>
+    <linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.20"/>
+      <stop offset="0.55" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <!-- tile (8 px padding on a 128 canvas); the soft gloss covers the whole tile so it has no visible edge -->
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#tile)"/>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="url(#gloss)"/>
+  <!-- funnel: wide mouth, narrowing body, short stem with a slanted outlet -->
+  <path d="M38 41 H90 L72 67 V88 L56 96 V67 Z" fill="#000" opacity="0.16" transform="translate(0 3)" stroke="#000" stroke-width="8" stroke-linejoin="round"/>
+  <path d="M38 41 H90 L72 67 V88 L56 96 V67 Z" fill="#FFFFFF" stroke="#FFFFFF" stroke-width="8" stroke-linejoin="round"/>
+  <!-- three items falling into the funnel: the feed, filtered -->
+  <rect x="44" y="26" width="9" height="5" rx="2.5" fill="#FFFFFF" opacity="0.55"/>
+  <rect x="59.5" y="22" width="9" height="5" rx="2.5" fill="#FFFFFF" opacity="0.8"/>
+  <rect x="75" y="26" width="9" height="5" rx="2.5" fill="#FFFFFF" opacity="0.55"/>
+</svg>
