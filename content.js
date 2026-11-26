@@ -694,7 +694,7 @@
 
     if (authorLink) {
       text = text || authorLink.textContent.trim();
-      const href   = authorLink.getAttribute('href');
+      const href   = authorLink.getAttribute('href') || '';   // can be a name without link
       const hMatch = href.match(/@([^/?#]+)/);
       handle = handle || (hMatch ? '@' + hMatch[1] : href);
     }
@@ -910,9 +910,17 @@
     );
     if (classicLink && classicLink.textContent.trim()) {
       text   = classicLink.textContent.trim();
-      const href = classicLink.getAttribute('href');
+      let href = classicLink.getAttribute('href');
+      // Videos by several channels ("A and 2 more") show the names without a
+      // link. The channel picture still leads to the first of them: use it.
+      const isShared = !href;
+      if (isShared) {
+        href = videoNode.querySelector('a#channel-thumbnail[href]')?.getAttribute('href') || '';
+      }
       const m    = href.match(/@([^/?#]+)/);
       handle = m ? '@' + m[1] : href;
+      // "A and 2 more" is not a channel name, so show and store the handle instead.
+      if (isShared && m) text = handle;
       elFound = classicLink;
     }
 
@@ -1032,6 +1040,14 @@
   }
 
 
+  // Identifies what a card shows right now ('' if it has no video link). YouTube
+  // reuses card elements for other videos, e.g. on a new search.
+  function getCardKey(videoNode, chanName, chanHandle) {
+    const link = videoNode.querySelector('a[href^="/watch"], a[href^="/shorts/"]')?.getAttribute('href');
+    return link ? `${link} ${chanHandle || chanName}` : '';
+  }
+
+
   // ════════════════════════════════════════════════════════════
   // 🚫 INSERT BLOCK BUTTON NEXT TO CHANNEL NAME
   // ════════════════════════════════════════════════════════════
@@ -1044,10 +1060,7 @@
   // The button is inserted directly next to it (insertAdjacentElement).
   //
   function injectBlockButton(videoNode, chanName, chanHandle, chanElement) {
-    // Guard 1: Button already inserted? → do nothing
-    if (videoNode.querySelector('.ytf-block-btn')) return;
-
-    // Guard 2: No channel name known? → cancel (will be retried in the next interval)
+    // Guard: No channel name known? → cancel (will be retried in the next interval)
     if (!chanHandle && !chanName) return;
 
     // ── Find the channel element (where the button will be inserted) ────
@@ -1087,17 +1100,38 @@
     // No channel name element found → cancel
     if (!targetEl) return;
 
-    // ── Create button ───────────────────────────────────
+    // ── Insert the button(s) ────────────────────────────
+    const addAfter = el => {
+      if (el && !el.parentElement.querySelector(':scope > .ytf-block-btn')) {
+        el.insertAdjacentElement('afterend', createBlockButton(videoNode));
+      }
+    };
+    if (!videoNode.querySelector('.ytf-block-btn')) addAfter(targetEl);
+    // Search results hold the channel name in several places and show only one of
+    // them, depending on the page layout (a link, or a plain text for videos by
+    // several channels). Each place gets its own button.
+    if (videoNode.matches('ytd-video-renderer')) {
+      videoNode.querySelectorAll('ytd-channel-name a, #attributed-channel-name > yt-text-view-model').forEach(addAfter);
+    }
+
+    // YouTube reuses cards for other videos: keep the tooltip up to date.
+    const title = `Block "${chanName || chanHandle}" — Hide all videos from this channel`;
+    videoNode.querySelectorAll('.ytf-block-btn').forEach(btn => { btn.title = title; });
+  }
+
+  function createBlockButton(videoNode) {
     const btn = document.createElement('button');
     btn.className = 'ytf-block-btn';
     btn.textContent = '🚫';
-    btn.title = `Block "${chanName || chanHandle}" — Hide all videos from this channel`;
 
     // Click-Handler: Kanal blockieren
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
 
+      // Read the card now: it may show another video than when the button was added.
+      const { text: chanName, handle: chanHandle } = getChannelInfo(videoNode);
+      if (!chanName && !chanHandle) return;
       const handle = chanHandle || chanName;
       const name   = chanName   || chanHandle;
 
@@ -1115,19 +1149,12 @@
           chrome.storage.sync.set({ blockedChannels: list }, () => {
             videoNode.style.display = 'none';
             videoNode.dataset.filtered = 'true_blocked';
+            videoNode.dataset.ytfVideo = getCardKey(videoNode, chanName, chanHandle);
           });
         }
       });
     });
-
-    // ── Button direkt neben dem Kanalnamen einfügen ──────────
-    // insertAdjacentElement('afterend', btn) = direkt NACH dem Element
-    try {
-      targetEl.insertAdjacentElement('afterend', btn);
-    } catch (err) {
-      // Fallback: Als Kind des Eltern-Elements anfügen
-      if (targetEl.parentElement) targetEl.parentElement.appendChild(btn);
-    }
+    return btn;
   }
 
 
@@ -1146,11 +1173,18 @@
   //
   function processVideo(videoNode) {
     if (!extensionEnabled) return;
-    // Guard: Already blocked → do not process again
-    if (!videoNode || videoNode.dataset.filtered === 'true_blocked') return;
+    if (!videoNode) return;
 
     // Read channel information from the video card:
     const { text: chanName, handle: chanHandle, elFound: chanElement } = getChannelInfo(videoNode);
+
+    // Guard: Already blocked → do not process again, as long as the card still
+    // shows the same video. A reused card is checked afresh.
+    const cardKey = getCardKey(videoNode, chanName, chanHandle);
+    if (videoNode.dataset.filtered === 'true_blocked') {
+      if (!cardKey || videoNode.dataset.ytfVideo === cardKey) return;
+      delete videoNode.dataset.nativelyHidden;
+    }
 
     // Video information:
     const duration       = parseDuration(getDurationText(videoNode));
@@ -1248,6 +1282,7 @@
       videoNode.style.display = 'none';
       videoNode.setAttribute('hidden', 'true');
       videoNode.dataset.filtered = 'true_blocked';
+      videoNode.dataset.ytfVideo = cardKey;
 
       // NEW: Trigger YouTube's internal hide function if enabled (using a queue)
       if (settings.detoxSettings.syncNativeHide && !videoNode.dataset.nativelyHidden) {
