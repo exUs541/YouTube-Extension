@@ -253,5 +253,8 @@
                     },
     "originalTitles": {
                         "message":  "Show Original Titles"
+                    },
+    "supportPatreon": {
+                        "message":  "Support on Patreon"
                     }
 }
