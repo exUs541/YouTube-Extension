@@ -51,6 +51,7 @@ A SMOOTHER SUBSCRIPTIONS PAGE
 • See how many subscriptions you have, for example "Subscriptions (46)".
 • Hide sidebar sections you never use, or keep your list always expanded.
 • A floating mini player stays in view while you scroll below a video.
+• Swap comments and recommended videos: scroll through the comments beside the video while it stays in view.
 
 PRIVATE BY DESIGN
 • No ads, no analytics, no servers. The extension works entirely in your browser.

@@ -247,5 +247,8 @@
                     },
     "pipOnScroll": {
                         "message":  "Picture-in-Picture on Scroll"
+                    },
+    "swapComments": {
+                        "message":  "Swap Comments & Related Videos"
                     }
 }

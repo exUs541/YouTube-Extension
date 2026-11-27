@@ -100,6 +100,7 @@
         settingsLoaded = true;
         scheduleSubCount();     // Show / hide the subscription counter
         updatePip();
+        updateSwap();
       }
     );
   }
@@ -137,11 +138,55 @@
         /* Startseiten-Feed ausblenden */
         body.hide-home-feed ytd-browse[page-type="home"] #primary { display: none !important; }
 
-        /* Empfohlene Videos (Seitenleiste beim Video) ausblenden */
-        body.hide-sidebar #secondary.ytd-watch-flexy { display: none !important; }
+        /* Empfohlene Videos (Seitenleiste beim Video) ausblenden.
+           While swapped, the right column holds the comments and must stay. */
+        body.hide-sidebar:not(.ytf-swap-active) #secondary.ytd-watch-flexy,
+        body.hide-sidebar.ytf-swap-active ytd-watch-next-secondary-results-renderer { display: none !important; }
 
         /* Kommentare ausblenden */
         body.hide-comments #comments { display: none !important; }
+
+        /* ── Comments beside the video, recommendations below it ── */
+        /* The column spans the whole page height, so the comments can stick. */
+        body.ytf-swap-active ytd-watch-flexy #secondary { align-self: stretch !important; }
+        body.ytf-swap-active ytd-watch-flexy #secondary-inner { height: 100%; }
+        /* The box ends at the bottom of the window (height set by fitComments),
+           so reading the comments never scrolls the video away. */
+        body.ytf-swap-active #secondary-inner > ytd-comments#comments {
+            position: sticky;
+            top: calc(var(--ytd-masthead-height, 56px) + 12px);
+            max-height: var(--ytf-comments-height, 60vh);
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            scrollbar-width: thin;
+            margin: 0;
+        }
+        /* A long playlist must leave room for the comments. */
+        body.ytf-swap-active ytd-watch-flexy #secondary-inner > #playlist { max-height: 42vh !important; }
+        /* Theater mode: the video makes room and the right column moves up beside it. */
+        body.ytf-swap-theater ytd-watch-flexy #full-bleed-container {
+            width: calc(100% - var(--ytf-column-width) - 16px) !important; /* 16px gap */
+            min-width: 0 !important;
+        }
+        body.ytf-swap-theater ytd-watch-flexy #secondary { margin-top: calc(-1 * var(--ytf-column-lift)) !important; }
+        body.ytf-swap-active #below ytd-watch-next-secondary-results-renderer { margin-top: 16px; }
+        /* Below the video YouTube draws each recommendation very large:
+           show smaller cards, two per row where there is room. */
+        body.ytf-swap-active #below ytd-watch-next-secondary-results-renderer ytd-item-section-renderer > #contents {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(420px, 100%), 1fr));
+            grid-auto-flow: row dense; /* no gap beside full-width inserts */
+            column-gap: 16px;
+        }
+        body.ytf-swap-active #below ytd-watch-next-secondary-results-renderer ytd-item-section-renderer > #contents > :not(yt-lockup-view-model, ytd-compact-video-renderer) {
+            grid-column: 1 / -1;
+        }
+        body.ytf-swap-active #below ytd-watch-next-secondary-results-renderer ytd-item-section-renderer > #contents > yt-lockup-view-model {
+            margin: 0 0 8px !important;
+        }
+        body.ytf-swap-active #below ytd-watch-next-secondary-results-renderer a.ytLockupViewModelContentImage {
+            width: 200px !important;
+        }
 
         /* ── Picture-in-Picture Mode ── */
         body.ytf-pip-active ytd-player {
@@ -1385,6 +1430,9 @@
   // Removes all our CSS classes and elements from the page.
   //
   function disableAll() {
+    // Put comments and recommendations back (extensionEnabled is false here):
+    updateSwap();
+
     // Remove our style tags:
     document.getElementById('yt-filter-priority-styles')?.remove();
 
@@ -1581,6 +1629,112 @@
 
 
   // ════════════════════════════════════════════════════════════
+  // SWAP COMMENTS AND RECOMMENDATIONS (watch page)
+  // ════════════════════════════════════════════════════════════
+  //
+  // Puts the comments to the right of the video and the recommended videos
+  // below it. Two elements change places, and a marker remembers where each
+  // came from:
+  //   ytd-comments#comments                    → right column, after #related
+  //   ytd-watch-next-secondary-results-renderer → old place of the comments
+  // The #related wrapper itself stays where it is: YouTube moves it below the
+  // video in narrow windows. There, and while comments are hidden, YouTube's
+  // normal layout applies.
+  //
+  // The comments must be readable while the video stays on screen. So their box
+  // always ends at the bottom of the window, and in theater mode the right
+  // column is placed beside the video instead of below it.
+  const swapMarkers = new Map(); // moved element → marker at its original place
+
+  function moveWithMarker(el, target) {
+    swapMarkers.get(el)?.remove();
+    const marker = document.createComment('ytf-swap');
+    el.before(marker);
+    swapMarkers.set(el, marker);
+    target.after(el);
+  }
+
+  function updateSwap() {
+    const watch = document.querySelector('ytd-watch-flexy');
+    const wanted = extensionEnabled && !!settings.detoxSettings.swapComments &&
+      !!watch && watch.hasAttribute('is-two-columns_') &&
+      !document.body.classList.contains('hide-comments');
+    if (!wanted) { undoSwap(); return; }
+
+    const related = watch.querySelector('#secondary-inner > #related');
+    const comments = watch.querySelector('ytd-comments#comments');
+    if (!related || !comments) return;
+
+    let moved = false;
+    if (comments.parentElement !== related.parentElement) {
+      moveWithMarker(comments, related);
+      moved = true;
+    }
+    const list = related.querySelector(':scope > ytd-watch-next-secondary-results-renderer');
+    const oldPlace = swapMarkers.get(comments);
+    if (list && oldPlace?.isConnected) {
+      moveWithMarker(list, oldPlace);
+      moved = true;
+    }
+    if (moved) document.body.classList.add('ytf-swap-active');
+    placeColumnInTheater(watch, comments);
+    fitComments();
+  }
+
+  function undoSwap() {
+    if (swapMarkers.size === 0) return;
+    // Recommendations first, so that they leave the place of the comments free.
+    [...swapMarkers].reverse().forEach(([el, marker]) => {
+      if (marker.isConnected) marker.replaceWith(el);
+      el.style.removeProperty('--ytf-comments-height');
+    });
+    swapMarkers.clear();
+    const wasBeside = document.body.classList.contains('ytf-swap-theater');
+    document.body.classList.remove('ytf-swap-active', 'ytf-swap-theater');
+    // The player fits its picture to its old width only after a resize event.
+    if (wasBeside) window.dispatchEvent(new Event('resize'));
+  }
+
+  // In theater mode the video spans the page and the right column starts below
+  // it. Narrow the video by the column's width and pull the column up beside it.
+  // Not in fullscreen, and not while YouTube hides the comments (live streams
+  // show their chat in a layout of YouTube's own).
+  function placeColumnInTheater(watch, comments) {
+    const body = document.body;
+    const video = watch.querySelector('#full-bleed-container');
+    const column = watch.querySelector('#secondary');
+    const beside = watch.hasAttribute('theater') && !document.fullscreenElement &&
+      !comments.hidden && !!video && video.offsetHeight > 0 && !!column && column.offsetWidth > 0;
+    const was = body.classList.contains('ytf-swap-theater');
+    let changed = beside !== was;
+
+    if (beside) {
+      const box = column.getBoundingClientRect();
+      const lifted = was ? parseFloat(body.style.getPropertyValue('--ytf-column-lift')) || 0 : 0;
+      const lift = Math.round(box.top + lifted - video.getBoundingClientRect().top) + 'px';
+      const width = Math.round(box.width) + 'px';
+      if (body.style.getPropertyValue('--ytf-column-width') !== width) changed = true;
+      body.style.setProperty('--ytf-column-width', width);
+      body.style.setProperty('--ytf-column-lift', lift);
+    }
+    body.classList.toggle('ytf-swap-theater', beside);
+    // Runs updateSwap again; it finds nothing left to change.
+    if (changed) window.dispatchEvent(new Event('resize'));
+  }
+
+  // Height of the comment box: from where it is now to the bottom of the window,
+  // minus the mini player (225px high, 20px from the bottom) while that floats.
+  function fitComments() {
+    if (swapMarkers.size === 0) return;
+    const comments = document.querySelector('ytd-watch-flexy #secondary-inner > ytd-comments#comments');
+    if (!comments) return;
+    const miniPlayer = document.body.classList.contains('ytf-pip-active') ? 257 : 0;
+    const free = window.innerHeight - Math.max(comments.getBoundingClientRect().top, 0) - 12 - miniPlayer;
+    comments.style.setProperty('--ytf-comments-height', Math.max(Math.round(free), 240) + 'px');
+  }
+
+
+  // ════════════════════════════════════════════════════════════
   // MESSAGE LISTENER: Receive commands from popup
   // ════════════════════════════════════════════════════════════
   //
@@ -1607,6 +1761,13 @@
   document.addEventListener('fullscreenchange', updatePip);
   setInterval(updatePip, 500);
 
+  // Swapped layout: follow window size changes and fullscreen; the timer covers
+  // theater mode and elements that YouTube renders late.
+  window.addEventListener('resize', updateSwap);
+  window.addEventListener('scroll', fitComments, { passive: true });
+  document.addEventListener('fullscreenchange', updateSwap);
+  setInterval(updateSwap, 500);
+
   // On YouTube navigation (SPA: Single Page App Navigation):
   window.addEventListener('yt-navigate-finish', () => {
     updateContextualUI();
@@ -1616,6 +1777,9 @@
     processChannelPage();
     replaceLogoIcon();
     updatePip();
+    updateSwap();
+    // The comment box has its own scroll position: start at the top again.
+    if (swapMarkers.size) document.querySelector('ytd-watch-flexy ytd-comments#comments')?.scrollTo(0, 0);
   });
 
   // Backup: Filter everything again every 3 seconds.

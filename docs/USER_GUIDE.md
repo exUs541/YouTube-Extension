@@ -93,6 +93,7 @@ The **General** tab contains global toggles that affect the entire YouTube site.
 | **Hide Endscreens** | Removes the suggested video overlays that appear at the end of videos. |
 | **Hide Notifications** | Hides the notification bell and its counter in the YouTube header. |
 | **Hide Trending** | Removes trending/explore content from the feed. |
+| **Swap Comments & Related Videos** | Shows the comments to the right of the video, in a column that scrolls on its own, and moves the recommended videos below the video. You can scroll through the comments while the video stays in view, also in theater mode. Applies when the window is wide enough for two columns and comments are not hidden; fullscreen shows only the video. With **Hide Related Sidebar** on, only the recommendations are hidden. |
 
 ### How Toggles Work
 - Click the toggle icon to switch between **visible** (open eye) and **hidden** (crossed-out eye)
