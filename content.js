@@ -211,6 +211,9 @@
         /* Shorts-Regalzeile im Feed */
         body.hide-shorts ytd-rich-shelf-renderer[is-shorts],
         body.hide-shorts ytd-reel-shelf-renderer,
+        /* Shorts shelf of the newer layout (search results) */
+        body.hide-shorts grid-shelf-view-model:has(a[href^="/shorts/"]),
+        body.hide-shorts ytm-shorts-lockup-view-model,
         /* Einzelne Short-Thumbnails */
         body.hide-shorts ytd-thumbnail:has(a[href*="/shorts"]) { display: none !important; }
 
