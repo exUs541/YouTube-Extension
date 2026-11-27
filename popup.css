@@ -93,12 +93,11 @@ html, body {
     background: var(--accent);
 }
 
-/* Donation link, pinned to the bottom of the sidebar above the master switch. */
-.support-btn {
+/* Patreon and website links, pinned to the bottom of the sidebar above the master switch. */
+.sidebar-links { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; margin: auto 0 12px; }
+.link-btn {
     display: flex; align-items: center; justify-content: center; gap: 5px;
-    flex-shrink: 0;
     height: 30px;
-    margin: auto 0 12px;
     border: 1px solid var(--line);
     border-radius: 999px;
     background: var(--bg);
@@ -109,8 +108,10 @@ html, body {
     text-decoration: none;
     transition: background .15s ease, border-color .15s ease;
 }
-.support-btn svg { width: 11px; height: 11px; flex-shrink: 0; color: #ff424d; }
-.support-btn:hover { background: var(--hover); border-color: #ff424d; }
+.link-btn svg { width: 11px; height: 11px; flex-shrink: 0; color: var(--muted); }
+.link-btn:hover { background: var(--hover); border-color: var(--muted); }
+.link-btn.patreon svg { color: #ff424d; }
+.link-btn.patreon:hover { border-color: #ff424d; }
 
 .sidebar-footer { padding: 12px 8px 0; border-top: 1px solid var(--line); }
 
@@ -265,21 +266,5 @@ input[type="color"] { width: 36px; height: 30px; padding: 2px; border: 1px solid
 .blocked-item-date { font-size: 12px; color: var(--muted); }
 .unblock-btn { padding: 4px 10px; flex-shrink: 0; }
 .blocked-empty { padding: 24px 12px; text-align: center; color: var(--muted); }
-
-/* ── Socials ──────────────────────────────────────────── */
-.social-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-.social-link {
-    display: flex; align-items: center; gap: 10px;
-    padding: 10px 12px;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    color: var(--text);
-    font-weight: 550;
-    text-decoration: none;
-    transition: background .15s ease;
-}
-.social-link:hover { background: var(--hover); }
-.social-icon { display: inline-flex; width: 18px; height: 18px; color: var(--muted); }
-.social-icon svg { width: 100%; height: 100%; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }

@@ -28,15 +28,19 @@
                         data-i18n="tabBlocked">Blocked</span></button>
                 <button class="tab-btn" data-tab="customization"><span
                         data-i18n="tabSettings">Settings</span></button>
-                <button class="tab-btn" data-tab="socials"><span
-                        data-i18n="tabSocials">Socials</span></button>
             </nav>
-            <!-- In the sidebar, so it shows on every tab and while the extension is off. -->
-            <a class="support-btn" href="https://www.patreon.com/c/exus541" target="_blank" rel="noopener noreferrer"
-                title="Support the development of YT Filter">
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.96 7.21c0-3.08-2.58-5.51-5.63-5.51s-5.51 2.43-5.51 5.51c0 3.04 2.47 5.51 5.51 5.51 3.04 0 5.63-2.43 5.63-5.51ZM2.09 1.7v20.6h4.18V1.7H2.09Z"/></svg>
-                <span data-i18n="supportPatreon">Support on Patreon</span>
-            </a>
+            <!-- In the sidebar, so they show on every tab and while the extension is off. -->
+            <div class="sidebar-links">
+                <a class="link-btn patreon" href="https://www.patreon.com/c/exus541" target="_blank" rel="noopener noreferrer"
+                    title="Support the development of YT Filter">
+                    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.96 7.21c0-3.08-2.58-5.51-5.63-5.51s-5.51 2.43-5.51 5.51c0 3.04 2.47 5.51 5.51 5.51 3.04 0 5.63-2.43 5.63-5.51ZM2.09 1.7v20.6h4.18V1.7H2.09Z"/></svg>
+                    <span data-i18n="supportPatreon">Support on Patreon</span>
+                </a>
+                <a class="link-btn website" href="https://exus541.github.io/portfolio/" target="_blank" rel="noopener noreferrer">
+                    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                    <span data-i18n="website">Website</span>
+                </a>
+            </div>
             <div class="sidebar-footer">
                 <div id="extension-toggle" class="power-toggle" title="Turn the extension on or off" role="switch" tabindex="0" aria-label="Extension enabled" aria-checked="true"><span
                         class="power-symbol">OFF</span></div>
@@ -214,36 +218,6 @@
                             <button id="import-settings-btn" class="backup-btn import-btn" data-i18n="importBtn">Import</button>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Socials Tab -->
-            <div id="socials" class="tab-content">
-                <div class="section-header">
-                    <h2 data-i18n="socialsHeader">Connect with me</h2>
-                    <p data-i18n="socialsSub">Follow for updates and support the project.</p>
-                </div>
-                <div class="social-grid">
-                    <a href="https://www.linkedin.com/company/exus541/" target="_blank" class="social-link linkedin">
-                        <span class="social-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
-                        </span> LinkedIn
-                    </a>
-                    <a href="https://www.youtube.com/@exUs541" target="_blank" class="social-link youtube">
-                        <span class="social-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-                        </span> YouTube
-                    </a>
-                    <a href="https://exus541.github.io/portfolio/" target="_blank" class="social-link website">
-                        <span class="social-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
-                        </span> Website
-                    </a>
-                    <a href="https://www.patreon.com/c/exus541" target="_blank" class="social-link patreon">
-                        <span class="social-icon">
-                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M0 .48v23.04h4.22V.48H0zm15.385 0c-4.764 0-8.641 3.88-8.641 8.65 0 4.755 3.877 8.636 8.641 8.636 4.75 0 8.615-3.881 8.615-8.637 0-4.77-3.865-8.649-8.615-8.649z"/></svg>
-                        </span> Patreon
-                    </a>
                 </div>
             </div>
         </main>

@@ -17,9 +17,6 @@
     "tabSettings":  {
                         "message":  "Settings"
                     },
-    "tabSocials":  {
-                        "message":  "Socials"
-                    },
     "generalHeader":  {
                           "message":  "General Settings"
                       },
@@ -83,12 +80,6 @@
     "sideHideLegal":  {
                           "message":  "Hide Legal"
                       },
-    "socialsHeader":  {
-                          "message":  "Connect with me"
-                      },
-    "socialsSub":  {
-                       "message":  "Follow for updates and support the project."
-                   },
     "sideHideGuide":  {
                           "message":  "Hide Main Navigation Sidebar"
                       },
@@ -256,5 +247,8 @@
                     },
     "supportPatreon": {
                         "message":  "Support on Patreon"
+                    },
+    "website": {
+                        "message":  "Website"
                     }
 }
