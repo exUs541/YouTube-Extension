@@ -24,6 +24,8 @@
 - **Cleaner sidebar**: hide Home, Shorts, Explore and other sections, auto-expand your subscriptions and see how many channels you follow, e.g. `Subscriptions (46)`.
 - **"Show more" stays on the page**: it opens your channel list in the sidebar instead of sending you to another page.
 - **The feed keeps loading**: if YouTube stops at grey placeholders, for example after you hid many videos, the next videos are loaded.
+- **Comments beside the video**: swap the comments and the recommended videos, so you can read the comments while you watch.
+- **Original titles**: see video titles as the creator wrote them instead of YouTube's automatic translation.
 - **Extras**: open the Subscriptions page instead of the home feed; a floating mini player while you scroll a video page.
 - **Private**: settings stay in your browser and sync through your browser account. Export and import as JSON. Light and dark theme.
 

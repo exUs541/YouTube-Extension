@@ -1,6 +1,6 @@
 # Privacy Policy for YT Filter – Channel Blocker & Hide Shorts for YouTube™
 
-**Last Updated: November 26, 2026**
+**Last Updated: November 27, 2026**
 
 This Privacy Policy describes how the "YT Filter – Channel Blocker & Hide Shorts for YouTube™" browser extension (the "Extension", previously published as "YouTube Channel Blocker & Video Filter") handles user data.
 
@@ -9,6 +9,7 @@ The Extension is designed to protect your privacy.
 - **No Personal Information:** We do not collect, store, or transmit any personally identifiable information (such as your name, email address, IP address, or browsing history).
 - **Extension Settings:** The Extension stores your filter preferences, blocked channels, and custom rules. This data is used solely to provide the filtering functionality on YouTube.
 - **Page Access:** The Extension runs only on youtube.com. It reads the page in your browser to hide videos and page elements according to your rules, to show a block button and the subscription count, and to keep the subscription list and the feed usable. Page content is not stored and is not sent anywhere.
+- **Original Titles:** If you switch on "Show Original Titles", the Extension asks youtube.com, through its public oEmbed address and without your YouTube cookies, for the original title of the videos on the page. Only the video's ID is sent, and only to youtube.com. The titles are not stored.
 - **Permissions:** The `storage` permission saves your settings. Access to youtube.com is needed so the filters can run on YouTube pages. The Extension requests no other permissions.
 
 ## 2. Data Storage

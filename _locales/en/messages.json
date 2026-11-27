@@ -17,9 +17,6 @@
     "tabSettings":  {
                         "message":  "Settings"
                     },
-    "tabSocials":  {
-                        "message":  "Socials"
-                    },
     "generalHeader":  {
                           "message":  "General Settings"
                       },
@@ -83,12 +80,6 @@
     "sideHideLegal":  {
                           "message":  "Hide Legal"
                       },
-    "socialsHeader":  {
-                          "message":  "Connect with me"
-                      },
-    "socialsSub":  {
-                       "message":  "Follow for updates and support the project."
-                   },
     "sideHideGuide":  {
                           "message":  "Hide Main Navigation Sidebar"
                       },
@@ -247,5 +238,17 @@
                     },
     "pipOnScroll": {
                         "message":  "Picture-in-Picture on Scroll"
+                    },
+    "swapComments": {
+                        "message":  "Swap Comments & Related Videos"
+                    },
+    "originalTitles": {
+                        "message":  "Show Original Titles"
+                    },
+    "supportPatreon": {
+                        "message":  "Support on Patreon"
+                    },
+    "website": {
+                        "message":  "Website"
                     }
 }
