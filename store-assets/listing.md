@@ -39,6 +39,7 @@ FEWER DISTRACTIONS
 • Hide Shorts on the feed and in the sidebar.
 • Hide the home feed, related videos, comments, end screens, the notification bell and Trending.
 • Open your subscriptions instead of the home page.
+• See titles as the creator wrote them instead of an automatic translation.
 
 FILTER BY KEYWORD AND LENGTH
 • Hide, or only show, videos whose title contains, starts with, ends with or exactly matches your words.
@@ -96,7 +97,7 @@ Paste into the Developer Dashboard, tab "Privacy practices".
 **Single purpose**
 
 ```
-Filter and declutter the YouTube website: block channels, hide Shorts and other page elements, hide videos by title keyword or duration, and keep the feed and the subscription list usable.
+Filter and declutter the YouTube website: block channels, hide Shorts and other page elements, hide videos by title keyword or duration, adjust how videos are listed and titled, and keep the feed and the subscription list usable.
 ```
 
 **storage justification**
@@ -108,7 +109,7 @@ Saves the user's block list, channel rules and settings, and syncs them across t
 **Host permission justification (youtube.com)**
 
 ```
-The content script runs only on youtube.com pages. It hides videos, Shorts and page elements according to the user's rules, adds a block button next to channel names, shows the number of subscriptions, keeps "Show more" in the sidebar on the same page and restarts the feed when YouTube stops loading it. It reads page content only for these functions and sends nothing to any server.
+The content script runs only on youtube.com pages. It hides videos, Shorts and page elements according to the user's rules, adds a block button next to channel names, shows the number of subscriptions, keeps "Show more" in the sidebar on the same page and restarts the feed when YouTube stops loading it. On request it swaps the comments with the recommended videos and shows original video titles. For the original titles it asks youtube.com (public oEmbed address, video ID only, no cookies). It reads page content only for these functions and sends nothing anywhere else.
 ```
 
 **Remote code:** No. **Data usage:** the extension does not collect or transmit user data. Tick none of the data types and confirm the three certifications (no sale of data, no use unrelated to the single purpose, no creditworthiness use).
@@ -132,7 +133,7 @@ hide recommendations
 **Notes for certification**
 
 ```
-No account or login is needed. The extension runs only on youtube.com and stores its settings with chrome.storage; no data is sent to any server.
+No account or login is needed. The extension runs only on youtube.com and stores its settings with chrome.storage; nothing is sent to the developer or to third parties. Only with "Show Original Titles" switched on it asks youtube.com for video titles (oEmbed, video ID only, no cookies).
 
 How to test: open https://www.youtube.com, click the extension icon, open the Blocked tab, add a channel handle and reload - videos from that channel disappear from the feed. In the General tab switch on "Hide Shorts (Global)" to remove Shorts from the feed.
 

@@ -250,5 +250,8 @@
                     },
     "swapComments": {
                         "message":  "Swap Comments & Related Videos"
+                    },
+    "originalTitles": {
+                        "message":  "Show Original Titles"
                     }
 }

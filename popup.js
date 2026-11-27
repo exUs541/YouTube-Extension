@@ -195,12 +195,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     'detox-comments': 'hideComments', 'detox-shorts': 'hideShorts', 'detox-endscreen': 'hideEndscreen',
                     'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending',
                     'detox-sync-native-hide': 'syncNativeHide', 'detox-pip-scroll': 'pipOnScroll',
-                    'detox-swap-comments': 'swapComments'
+                    'detox-swap-comments': 'swapComments', 'detox-original-titles': 'originalTitles'
                 };
                 val = settingsData.detoxSettings[map[id]] || false;
             }
 
-            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'side-show-sub-count' || id === 'detox-sync-native-hide' || id === 'detox-pip-scroll' || id === 'detox-swap-comments') {
+            if (id === 'detox-redirect-subs' || id === 'side-auto-expand-subs' || id === 'side-show-sub-count' || id === 'detox-sync-native-hide' || id === 'detox-pip-scroll' || id === 'detox-swap-comments' || id === 'detox-original-titles') {
                 setIcon(el, val ? 'active' : 'inactive');
             } else {
                 setIcon(el, val ? 'hidden' : 'visible');
@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     'detox-comments': 'hideComments', 'detox-shorts': 'hideShorts', 'detox-endscreen': 'hideEndscreen',
                     'detox-notifications': 'hideNotifications', 'detox-trending': 'hideTrending',
                     'detox-sync-native-hide': 'syncNativeHide', 'detox-pip-scroll': 'pipOnScroll',
-                    'detox-swap-comments': 'swapComments'
+                    'detox-swap-comments': 'swapComments', 'detox-original-titles': 'originalTitles'
                 };
                 const key = map[id];
                 settingsData.detoxSettings[key] = !settingsData.detoxSettings[key];

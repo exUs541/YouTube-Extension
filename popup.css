@@ -135,7 +135,7 @@ html, body {
 /* ── Setting rows ─────────────────────────────────────── */
 .detox-row {
     display: flex; align-items: center; justify-content: space-between; gap: 12px;
-    padding: 6px 0;
+    padding: 5px 0;
     border-bottom: 1px solid var(--line);
 }
 .detox-row label { font-weight: 500; }

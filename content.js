@@ -101,6 +101,7 @@
         scheduleSubCount();     // Show / hide the subscription counter
         updatePip();
         updateSwap();
+        updateTitles();
       }
     );
   }
@@ -918,7 +919,7 @@
   function getVideoTitle(videoNode) {
     // Try various selectors (YouTube occasionally changes these):
     const titleEl = videoNode.querySelector(
-      'a#video-title, a#video-title-link, #video-title-link, #video-title, .yt-lockup-metadata-view-model__title'
+      'a#video-title, a#video-title-link, #video-title-link, #video-title, .yt-lockup-metadata-view-model__title, a.ytLockupMetadataViewModelTitle, a.shortsLockupViewModelHostOutsideMetadataEndpoint'
     );
     if (!titleEl) return '';
 
@@ -1435,6 +1436,8 @@
   function disableAll() {
     // Put comments and recommendations back (extensionEnabled is false here):
     updateSwap();
+    // ... and YouTube's own titles:
+    updateTitles();
 
     // Remove our style tags:
     document.getElementById('yt-filter-priority-styles')?.remove();
@@ -1738,6 +1741,144 @@
 
 
   // ════════════════════════════════════════════════════════════
+  // ORIGINAL TITLES (undo YouTube's automatic translation)
+  // ════════════════════════════════════════════════════════════
+  //
+  // YouTube shows many titles translated into the visitor's language. Its
+  // public oEmbed address returns the title as the creator wrote it. We ask for
+  // it once per video and put it in place of the translated one.
+  const CARD_TITLES = [
+    'a.ytLockupMetadataViewModelTitle', '.yt-lockup-metadata-view-model__title',
+    'a.shortsLockupViewModelHostOutsideMetadataEndpoint', '#video-title',
+    '.ytp-ce-video-title', '.ytp-videowall-still-info-title', '.ytp-modern-videowall-still-info-title'
+  ].join(',');
+  const WATCH_TITLES = [
+    'ytd-watch-metadata h1 yt-formatted-string',
+    'ytd-video-primary-info-renderer h1 yt-formatted-string',
+    'yt-video-title-header-view-model h2 span',
+    'yt-player-overlay-video-details-renderer h2 span',
+    '#movie_player:not(.ad-showing) .ytp-title-link'
+  ].join(',');
+  const originalTitles = new Map();  // video id → title, null if YouTube gives none
+  const titleAsked = new Set();      // ids requested or answered
+  const titleWaiting = [];
+  const replacedTitles = new Map();  // element → what it showed before
+  let titleRequests = 0;
+  let replacedTabTitle = null;
+
+  const sameText = (a, b) => a.replace(/\s+/g, ' ').trim() === b.replace(/\s+/g, ' ').trim();
+
+  function fetchTitles() {
+    while (titleRequests < 4 && titleWaiting.length) {
+      const id = titleWaiting.shift();
+      titleRequests++;
+      const video = encodeURIComponent('https://www.youtube.com/watch?v=' + id);
+      fetch(`${location.origin}/oembed?format=json&url=${video}`, { credentials: 'omit' })
+        .then(res => {
+          if (res.status === 429 || res.status >= 500) throw new Error('try later');
+          return res.ok ? res.json() : null; // e.g. embedding switched off
+        })
+        .then(data => originalTitles.set(id, data?.title || null))
+        .catch(() => setTimeout(() => titleAsked.delete(id), 30000))
+        .finally(() => {
+          titleRequests--;
+          fetchTitles();
+          if (originalTitles.has(id)) updateTitles();
+        });
+    }
+  }
+
+  // The video a title element belongs to, taken from the link around or beside it.
+  function titleVideoId(el) {
+    const inList = el.closest('ytd-playlist-panel-video-renderer, ytd-playlist-video-renderer');
+    const link = el.closest('a[href]') ||
+      el.closest('.ytp-ce-element')?.querySelector('a[href]') ||
+      el.closest('ytd-video-renderer, ytd-compact-video-renderer, ytd-grid-video-renderer, ytd-rich-grid-media, ytd-playlist-panel-video-renderer, ytd-playlist-video-renderer')
+        ?.querySelector('a[href*="/watch?v="], a[href^="/shorts/"]');
+    const href = link?.getAttribute('href') || '';
+    // A playlist or mix card links to a video, but its title names the list.
+    // New cards show that by a stacked thumbnail, older ones only by the link.
+    const lockup = el.closest('yt-lockup-view-model');
+    if (lockup) {
+      if (lockup.querySelector('yt-collection-thumbnail-view-model')) return null;
+    } else if (href.includes('list=') && !href.includes('index=') && !inList) {
+      return null;
+    }
+    return href.match(/(?:[?&]v=|\/shorts\/)([\w-]{11})/)?.[1] || null;
+  }
+
+  function showOriginal(el, id) {
+    const shown = el.textContent.trim();
+    if (!id || !shown) return;
+    if (!originalTitles.has(id)) {
+      if (!titleAsked.has(id)) {
+        titleAsked.add(id);
+        titleWaiting.push(id);
+        fetchTitles();
+      }
+      return;
+    }
+    const title = originalTitles.get(id);
+    if (!title || sameText(shown, title)) return;
+
+    // Change the text nodes only, so that YouTube's own elements stay intact.
+    const nodes = [];
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) if (walker.currentNode.nodeValue.trim()) nodes.push(walker.currentNode);
+    if (!nodes.length) return;
+    const saved = { title, texts: nodes.map(n => [n, n.nodeValue]), attributes: [] };
+    nodes.forEach((n, i) => { n.nodeValue = i === 0 ? title : ''; });
+
+    // Tooltip and screen reader text carry the translated title too.
+    for (const [node, name] of [[el, 'title'], [el, 'aria-label'], [el.parentElement, 'title']]) {
+      const value = node?.getAttribute(name);
+      if (!value || !value.includes(shown)) continue;
+      saved.attributes.push([node, name, value]);
+      node.setAttribute(name, value.replace(shown, () => title));
+    }
+    replacedTitles.set(el, saved);
+
+    // A card hidden because of its translated title is judged again.
+    const card = el.closest('ytd-rich-item-renderer, ytd-video-renderer, ytd-grid-video-renderer, ytd-compact-video-renderer, yt-lockup-view-model');
+    if (card?.dataset.filtered === 'true_blocked') card.dataset.filtered = '';
+  }
+
+  function showOriginalTabTitle(id) {
+    const title = originalTitles.get(id);
+    const parts = document.title.match(/^(\(\d+\+?\) )?(.+) - YouTube$/);
+    if (!title || !parts || sameText(parts[2], title)) return;
+    const ours = `${parts[1] || ''}${title} - YouTube`;
+    replacedTabTitle = { theirs: document.title, ours };
+    document.title = ours;
+  }
+
+  function restoreTitles() {
+    for (const [el, saved] of replacedTitles) {
+      if (!sameText(el.textContent, saved.title)) continue; // YouTube changed it meanwhile
+      saved.texts.forEach(([node, value]) => { node.nodeValue = value; });
+      saved.attributes.forEach(([node, name, value]) => node.setAttribute(name, value));
+    }
+    replacedTitles.clear();
+    if (replacedTabTitle && document.title === replacedTabTitle.ours) document.title = replacedTabTitle.theirs;
+    replacedTabTitle = null;
+  }
+
+  function updateTitles() {
+    if (!extensionEnabled || !settings.detoxSettings.originalTitles) {
+      restoreTitles();
+      return;
+    }
+    for (const el of replacedTitles.keys()) if (!el.isConnected) replacedTitles.delete(el);
+    document.querySelectorAll(CARD_TITLES).forEach(el => showOriginal(el, titleVideoId(el)));
+    const id = location.pathname === '/watch' ? new URLSearchParams(location.search).get('v') : null;
+    if (id) {
+      document.querySelectorAll(WATCH_TITLES).forEach(el => showOriginal(el, id));
+      showOriginalTabTitle(id);
+    }
+  }
+
+
+  // ════════════════════════════════════════════════════════════
   // MESSAGE LISTENER: Receive commands from popup
   // ════════════════════════════════════════════════════════════
   //
@@ -1771,6 +1912,9 @@
   document.addEventListener('fullscreenchange', updateSwap);
   setInterval(updateSwap, 500);
 
+  // Original titles: YouTube adds and rewrites titles all the time.
+  setInterval(updateTitles, 700);
+
   // On YouTube navigation (SPA: Single Page App Navigation):
   window.addEventListener('yt-navigate-finish', () => {
     updateContextualUI();
@@ -1781,6 +1925,7 @@
     replaceLogoIcon();
     updatePip();
     updateSwap();
+    updateTitles();
     // The comment box has its own scroll position: start at the top again.
     if (swapMarkers.size) document.querySelector('ytd-watch-flexy ytd-comments#comments')?.scrollTo(0, 0);
   });
